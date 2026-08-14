@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Notenwerk Pro - Dual System</title>
+    <style>
+    :root {
+        --primary: #2c3e50; --bg: #f4f7f6; --white: #ffffff; --border: #ddd;
+        --g1: #256540; --g2: #27ae60; --g3: #f1c40f; --g4: #e67e22; --g5: #e74c3c; --g6: #8e44ad;
+        --absent-bg: #fadbd8; --absent-text: #c0392b; --safe: #2980b9;
+        --footer-text: #7f8c8d;
+        --esa-color: #27ae60; --msa-color: #2980b9; --ahr-color: #8e44ad;
+        --touch-target: 48px;
+        /* Kompetenz Farben (1-5) */
+        --k1: #256540; --k2: #27ae60; --k3: #f1c40f; --k4: #e67e22; --k5: #e74c3c;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 10px; line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+    .container { max-width: 1200px; width: 100%; flex: 1; margin: 0 auto; padding: 0 5px; }
+    h1 { font-size: 1.6rem; text-align: center; margin: 10px 0 20px 0; color: var(--primary); }
+    h2 { font-size: 1.4rem; margin-top: 0; color: var(--primary); }
+    h3 { font-size: 1.2rem; color: var(--primary); }
+    .card { background: var(--white); padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; width: 100%; box-sizing: border-box; }
+    .card.visible { display: block; }
+    button { cursor: pointer; border: none; border-radius: 6px; padding: 12px 16px; font-weight: bold; transition: 0.2s; touch-action: manipulation; font-size: 1rem; -webkit-tap-highlight-color: transparent; font-family: inherit; }
+    .btn-primary { background: var(--primary); color: white; width: 100%; margin: 10px 0; padding: 14px; font-size: 1.1rem; position: relative; z-index: 10; box-sizing: border-box; }
+    .btn-sticky { position: sticky; bottom: 20px; margin-top: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 100; border-radius: 50px; max-width: 300px; left: 50%; transform: translateX(-50%); width: 90%; }
+    .btn-sticky-fixed { position: fixed !important; bottom: 25px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 9999 !important; width: auto !important; min-width: 220px; max-width: 90%; border-radius: 50px !important; box-shadow: 0 5px 20px rgba(0,0,0,0.3) !important; margin: 0 !important; padding: 14px 28px !important; }
+    .btn-success { background: var(--g2); color: white; }
+    .btn-danger { background: var(--g5); color: white; }
+    .btn-safe { background: var(--safe); color: white; }
+    .btn-small { padding: 8px 12px; font-size: 0.9rem; width: auto; display: inline-block; }
+    .btn-outline { background: white; border: 2px solid var(--primary); color: var(--primary); }
+    .btn-outline:hover { background: var(--primary); color: white; }
+    .btn-sort { background: #ecf0f1; color: #333; margin-right: 5px; font-size: 0.9rem; padding: 8px 12px; }
+    .btn-sort.active { background: var(--primary); color: white; }
+    .niveau-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; background: #f0f2f5; padding: 8px; border-radius: 50px; flex-wrap: wrap; }
+    .niv-btn { flex: 1; min-width: 80px; max-width: 120px; padding: 12px 5px; border-radius: 20px; font-size: 0.95rem; border: 2px solid transparent; opacity: 0.7; transform: scale(1); color: white; }
+    .niv-btn.active { opacity: 1; transform: scale(1.05); box-shadow: 0 4px 6px rgba(0,0,0,0.2); border-color: #333; }
+    .niv-esa { background: var(--esa-color); } .niv-msa { background: var(--msa-color); } .niv-ahr { background: var(--ahr-color); }
+    input[type="text"], input[type="number"], input[type="date"], input[type="file"], select { width: 100%; padding: 12px; margin: 5px 0 15px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 1rem; font-family: inherit; }
+    .color-picker-container { margin: 15px 0; }
+    .color-options { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .color-opt { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.2s; }
+    .color-opt:hover { transform: scale(1.1); }
+    .color-opt.selected { border-color: #333; transform: scale(1.15); }
+    .crit-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 6px; flex-wrap: wrap; }
+    .crit-name { flex: 2; min-width: 150px; } .crit-weight { flex: 1; max-width: 70px; }
+    .sum-display { text-align: right; font-weight: bold; margin-top: 10px; }
+    .sum-ok { color: var(--g2); } .sum-err { color: var(--g5); }
+    
+    #courseList { list-style: none; padding: 0; }
+    .course-item { background: white; border-left: 8px solid #ccc; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
+    .course-item::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.08; z-index: 0; pointer-events: none; }
+    .course-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-color: #bbb; }
+    .course-item:hover::before { opacity: 0.15; }
+    .course-item.dragging { opacity: 0.5; border: 2px dashed var(--primary); transform: scale(1.02); }
+    .course-controls { display: none; gap: 5px; align-items: center; z-index: 1; position: relative; }
+    .course-item.sort-mode .course-controls { display: flex; }
+    .course-item.sort-mode { cursor: grab; }
+    .course-item.sort-mode:active { cursor: grabbing; }
+    .sort-btn { background: #ecf0f1; color: #333; padding: 6px 10px; font-size: 0.8rem; border-radius: 4px; min-width: 32px; border: 1px solid rgba(0,0,0,0.1); transition: all 0.2s; z-index: 2; position: relative; }
+    .sort-btn:hover { transform: scale(1.1); font-weight: bold; color: white !important; border-color: transparent; }
+    .course-item > div:first-child, .course-item > button { position: relative; z-index: 1; }
+
+    .student-row { border-bottom: 1px solid #eee; padding: 15px 5px; transition: background 0.2s; position: relative; box-sizing: border-box; }
+    .student-row.level-esa { border-left: 5px solid var(--esa-color); background: #f9fdf9; }
+    .student-row.level-msa { border-left: 5px solid var(--msa-color); background: #f4f9fd; }
+    .student-row.level-ahr { border-left: 5px solid var(--ahr-color); background: #fbf4fd; }
+    
+    .student-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+    .student-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
+    .student-name { font-weight: bold; font-size: 1.1rem; }
+    .level-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; text-transform: uppercase; }
+    .lb-esa { background: var(--esa-color); } .lb-msa { background: var(--msa-color); } .lb-ahr { background: var(--ahr-color); }
+    .absent-btn { background: #ecf0f1; color: #333; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; min-height: var(--touch-target); white-space: nowrap; }
+    .absent-btn.active { background: var(--absent-bg); color: var(--absent-text); border: 2px solid var(--absent-text); }
+    .level-switcher { display: flex; gap: 5px; margin-top: 8px; width: 100%; }
+    .ls-btn { font-size: 0.8rem; padding: 6px 10px; border-radius: 12px; border: 1px solid #ccc; background: white; color: #777; flex: 1; text-align: center; min-height: var(--touch-target); display: flex; align-items: center; justify-content: center; }
+    .ls-btn.active { color: white; border-color: transparent; font-weight: bold; }
+    .ls-esa.active { background: var(--esa-color); } .ls-msa.active { background: var(--msa-color); } .ls-ahr.active { background: var(--ahr-color); }
+    
+    .grade-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-top: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+    .grade-grid::-webkit-scrollbar { height: 6px; }
+    .grade-grid::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; }
+    .grade-col { display: flex; flex-direction: column; align-items: center; min-width: 85px; }
+    .grade-label { font-size: 0.75rem; text-align: center; font-weight: bold; color: #777; margin-bottom: 4px; }
+    .grade-val { font-size: 0.7rem; color: #999; margin-bottom: 4px; }
+    
+    /* Grade Buttons General */
+    .g-btn { width: 60px; height: 60px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid rgba(0,0,0,0.1); background: #eee; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; transition: transform 0.1s; flex-shrink: 0; text-align: center; padding: 2px; line-height: 1.1; }
+    .g-btn:active { transform: scale(0.9); }
+    .g-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+    
+    /* Noten (1-6) */
+    .g-0 { background: #e0e0e0; color: #999; border: 2px solid #ccc; font-size: 1.5rem; }
+    .g-1 { background: var(--g1); color: white; } .g-2 { background: var(--g2); color: white; }
+    .g-3 { background: var(--g3); color: #333; } .g-4 { background: var(--g4); color: white; }
+    .g-5 { background: var(--g5); color: white; } .g-6 { background: var(--g6); color: white; }
+    
+    /* Kompetenzen (1-5) - Textbasiert */
+    .k-0 { background: #e0e0e0; color: #999; border: 2px solid #ccc; font-size: 0.7rem; }
+    .k-1 { background: var(--k1); color: white; font-size: 0.65rem; }
+    .k-2 { background: var(--k2); color: white; font-size: 0.65rem; }
+    .k-3 { background: var(--k3); color: #333; font-size: 0.65rem; }
+    .k-4 { background: var(--k4); color: white; font-size: 0.65rem; }
+    .k-5 { background: var(--k5); color: white; font-size: 0.65rem; }
+
+    .row-average { font-weight: bold; font-size: 1.2rem; color: var(--primary); min-width: 60px; text-align: right; padding-right: 10px; flex-shrink: 0; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; border-bottom: 1px solid #eee; }
+    .tab-btn { background: #ecf0f1; flex: 0 0 auto; min-width: 100px; white-space: nowrap; padding: 10px 12px; font-size: 0.95rem; border-radius: 8px 8px 0 0; }
+    .tab-btn.active { background: var(--primary); color: white; }
+    .tab-btn.hidden { display: none; }
+    
+    .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; border: 1px solid #eee; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 600px; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: center; white-space: nowrap; }
+    th { background: var(--primary); color: white; position: sticky; top: 0; }
+    .col-left { text-align: left; }
+    .bg-1 { background: var(--g1); color: white; } .bg-2 { background: var(--g2); color: white; }
+    .bg-3 { background: var(--g3); color: #333; } .bg-4 { background: var(--g4); color: white; }
+    .bg-5 { background: var(--g5); color: white; } .bg-6 { background: var(--g6); color: white; }
+    .bg-k1 { background: var(--k1); color: white; } .bg-k2 { background: var(--k2); color: white; }
+    .bg-k3 { background: var(--k3); color: #333; } .bg-k4 { background: var(--k4); color: white; }
+    .bg-k5 { background: var(--k5); color: white; }
+
+    .text-absent { color: #999; font-style: italic; }
+    .app-footer { text-align: center; padding: 20px 0; margin-top: 20px; border-top: 1px solid #e0e0e0; color: var(--footer-text); font-size: 0.85rem; width: 100%; }
+    .input-group { position: relative; }
+    .csv-btn { width: auto; display: inline-block; margin: 0 0 15px 0; font-size: 0.9rem; padding: 10px 14px; }
+    .helper-text { font-size: 0.8rem; color: #666; margin-top: -10px; margin-bottom: 15px; display: block; }
+    .sort-controls { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 5px; flex-wrap: wrap; }
+    .niveau-list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
+    .niveau-list-item:last-child { border-bottom: none; }
+    .niveau-controls { display: flex; gap: 5px; flex: 1; justify-content: flex-end; min-width: 200px; }
+    
+    /* Report Cards */
+    .report-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: none; }
+    .report-card.visible { display: block; }
+    .rc-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; }
+    .rc-name { font-weight: bold; font-size: 1.1rem; color: var(--primary); }
+    .rc-level { font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; color: white; font-weight: bold; text-transform: uppercase; }
+    .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 10px; }
+    .rc-item { text-align: center; background: #f9f9f9; border-radius: 6px; padding: 8px 4px; }
+    .rc-label { font-size: 0.7rem; color: #777; margin-bottom: 4px; display: block; }
+    .rc-grade { font-size: 1rem; font-weight: bold; min-width: 24px; height: 24px; line-height: 24px; border-radius: 50%; margin: 0 auto; color: white; display: inline-block; padding: 0 4px; }
+    .rc-g-1 { background-color: var(--g1); } .rc-g-2 { background-color: var(--g2); }
+    .rc-g-3 { background-color: var(--g3); color: #333 !important; } .rc-g-4 { background-color: var(--g4); }
+    .rc-g-5 { background-color: var(--g5); } .rc-g-6 { background-color: var(--g6); }
+    .rc-k1 { background-color: var(--k1); } .rc-k2 { background-color: var(--k2); }
+    .rc-k3 { background-color: var(--k3); color: #333 !important; } .rc-k4 { background-color: var(--k4); }
+    .rc-k5 { background-color: var(--k5); }
+    .rc-g-avg { background-color: var(--primary); font-size: 1rem; line-height: 30px; }
+    .rc-footer { display: flex; justify-content: space-between; font-size: 0.85rem; color: #666; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
+    
+    @media (min-width: 1024px) { .report-card { display: none !important; } .table-wrapper { display: block; } }
+    @media (max-width: 1023px) { .report-card { display: block; } .table-wrapper { display: none; } }
+    
+    /* Popover Styles */
+    .grade-popover { position: fixed; background: #2c3e50; border-radius: 8px; padding: 10px; display: none; flex-direction: column; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 10000; transform: translate(-50%, -120%); animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); align-items: center; }
+    .grade-popover.visible { display: flex; }
+    .grade-popover::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-width: 6px 6px 0; border-style: solid; border-color: #2c3e50 transparent transparent transparent; }
+    .gp-btn { width: 36px; height: 36px; border-radius: 50%; border: none; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; transition: transform 0.1s; padding: 0; }
+    .gp-btn:active { transform: scale(0.9); }
+    .gp-1 { background: var(--g1); } .gp-2 { background: var(--g2); }
+    .gp-3 { background: var(--g3); color: #333; } .gp-4 { background: var(--g4); }
+    .gp-5 { background: var(--g5); } .gp-6 { background: var(--g6); }
+    .gp-0 { background: #95a5a6; }
+    .gp-k1 { background: var(--k1); } .gp-k2 { background: var(--k2); }
+    .gp-k3 { background: var(--k3); color: #333; } .gp-k4 { background: var(--k4); }
+    .gp-k5 { background: var(--k5); }
+
+    .niveau-selector { display: flex; gap: 5px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px; width: 100%; justify-content: center; }
+    .gp-niv-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; font-weight: bold; font-size: 0.75rem; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: all 0.2s; }
+    .gp-niv-btn.active { opacity: 1; transform: scale(1.1); border-color: white; }
+    .gp-niv-esa { background: var(--esa-color); } .gp-niv-msa { background: var(--msa-color); } .gp-niv-ahr { background: var(--ahr-color); }
+
+    @keyframes popIn { from { opacity: 0; transform: translate(-50%, -100%); } to { opacity: 1; transform: translate(-50%, -120%); } }
+    
+    .comment-icon { cursor: pointer; font-size: 1.2rem; margin-left: 8px; opacity: 0.3; transition: all 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; }
+    .comment-icon:hover { opacity: 1; background: #eee; }
+    .comment-icon.has-comment { opacity: 1; color: var(--primary); background: #e8f4fd; border: 1px solid var(--msa-color); }
+    .comment-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; display: none; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+    .comment-modal-overlay.visible { display: flex; }
+    .comment-modal { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; animation: slideUp 0.3s ease; }
+    .comment-modal h4 { margin-top: 0; color: var(--primary); font-size: 1.1rem; }
+    .comment-modal textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 1rem; resize: vertical; box-sizing: border-box; margin: 10px 0; }
+    .comment-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+    .comment-modal-actions button { flex: 1; max-width: 120px; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media print {
+        @page { margin: 1.5cm; size: A4 landscape; }
+        body { background: white !important; color: black !important; font-size: 10pt; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; display: block !important; width: 100% !important; }
+        .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; display: block !important; }
+        .btn-primary, .btn-success, .btn-danger, .btn-outline, .btn-sort, .niveau-bar, .tabs, .color-picker-container, .app-footer, .csv-btn, input, .level-switcher, .absent-btn, #view-dashboard, #tab-setup, #tab-entry, #tab-niveaus, #tab-history, .btn-sticky, .btn-sticky-fixed, .grade-grid, .student-header button, .report-card, .sort-controls, .print-header-info button, .grade-popover, .niveau-selector { display: none !important; visibility: hidden !important; height: 0 !important; }
+        #tab-report h3 { display: block !important; visibility: visible !important; color: black !important; font-size: 12pt !important; margin-top: 20px !important; page-break-after: avoid; }
+        #tab-setup h3, #tab-entry h3, #tab-niveaus h3, #tab-history h3 { display: none !important; }
+        #view-app, #tab-report { display: block !important; visibility: visible !important; position: static !important; width: 100% !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+        .table-wrapper { display: block !important; visibility: visible !important; width: 100% !important; margin-bottom: 15px; overflow: visible !important; border: none !important; page-break-inside: avoid; }
+        table { display: table !important; width: 100% !important; border-collapse: collapse !important; font-size: 9pt !important; margin-bottom: 10px; page-break-inside: auto; }
+        thead { display: table-header-group !important; } tbody { display: table-row-group !important; } tr { display: table-row !important; page-break-inside: avoid; }
+        th, td { display: table-cell !important; visibility: visible !important; border: 1px solid #000 !important; padding: 3px 5px !important; text-align: center !important; color: #000 !important; white-space: nowrap !important; font-size: 9pt !important; }
+        th { background-color: #ddd !important; color: #000 !important; font-weight: bold !important; text-align: center !important; }
+        .bg-1, .bg-k1 { background-color: #256540 !important; color: #fff !important; } 
+        .bg-2, .bg-k2 { background-color: #27ae60 !important; color: #fff !important; }
+        .bg-3, .bg-k3 { background-color: #f1c40f !important; color: #000 !important; } 
+        .bg-4, .bg-k4 { background-color: #e67e22 !important; color: #fff !important; }
+        .bg-5, .bg-k5 { background-color: #e74c3c !important; color: #fff !important; } 
+        .bg-6 { background-color: #8e44ad !important; color: #fff !important; }
+        #appTitle { display: block !important; visibility: visible !important; font-size: 18pt !important; border-bottom: 2px solid black !important; padding-bottom: 5px !important; margin-bottom: 10px !important; color: black !important; }
+        .print-header-info { display: block !important; visibility: visible !important; font-size: 8pt !important; font-style: italic; margin-bottom: 15px !important; }
+        #commentTable, #commentTable thead, #commentTable tbody, #commentTable tr, #commentTable td { display: table !important; visibility: visible !important; border: 1px solid #000 !important; page-break-inside: avoid; }
+        #commentTableWrapper { display: block !important; overflow: visible !important; }
+    }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Notenwerk">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+<div class="container">
+    <h1>📚 Notenwerk Pro</h1>
+    <div id="view-dashboard" class="card visible">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0;">Meine Kurse</h2>
+        </div>
+        <button class="btn-primary btn-success" onclick="createNewCourse()">+ Neuer Kurs</button>
+        <div style="background:#e8f6f3; padding:15px; border-radius:8px; margin:20px 0; border:1px solid #a2d9ce;">
+            <h3 style="margin-top:0;">💾 Datensicherung</h3>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-safe" style="flex:1" onclick="exportData()">Alles speichern (JSON)</button>
+                <label class="btn-primary" style="flex:1; text-align:center; margin:0;">
+                    Wiederherstellen
+                    <input type="file" accept=".json" style="display:none" onchange="importData(this)">
+                </label>
+            </div>
+        </div>
+        <br><br>
+        <button id="toggleSortBtn" class="btn-small btn-outline" onclick="toggleSortMode()">✏️ Anordnung bearbeiten</button>
+        <ul id="courseList" style="list-style:none; padding:0;"></ul>
+        <p id="noCourses" style="text-align:center; color:#999;">Keine Kurse vorhanden.</p>
+    </div>
+
+    <div id="view-app" class="card">
+        <button class="btn-primary" style="background:#95a5a6;" onclick="showDashboard()">← Zurück</button>
+        <h2 id="appTitle" style="margin:0 0 10px 0; text-align:left;"></h2>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('setup')" id="tab-btn-setup">1. Einrichten</button>
+            <button class="tab-btn" onclick="switchTab('niveaus')" id="tab-btn-niveaus">2. Niveaus</button>
+            <button class="tab-btn" onclick="switchTab('entry')" id="tab-btn-entry">3. Bewertung</button>
+            <button class="tab-btn" onclick="switchTab('history')" id="tab-btn-history">4. Verlauf</button>
+            <button class="tab-btn" onclick="switchTab('report')" id="tab-btn-report">5. Bericht</button>
+        </div>
+
+        <div id="tab-setup">
+            <label>Kursname</label><input type="text" id="inpName">
+            <label>Klasse</label><input type="text" id="inpClass">
+            <label>Kurstyp</label>
+            <select id="courseType" onchange="toggleSetupMode()">
+                <option value="sek1">Sekundarstufe I (Klassen 7-10) - Noten 1-6</option>
+                <option value="kompetenz">Kompetenzstufe (Klassen 5-6) - Stufen 1-5</option>
+            </select>
+
+            <label>Schüler (durch Komma trennen)</label>
+            <div class="input-group"><input type="text" id="inpStudents" placeholder="Max Mustermann, Erika Musterfrau"></div>
+            <button class="btn-outline csv-btn" onclick="document.getElementById('csvFile').click()">📄 CSV Import</button>
+            <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCsvImport(this)">
+            <span class="helper-text">CSV: Spalte 1 (ignoriert), Spalte 2 = Nachname, Spalte 3 = Vorname</span>
+            
+            <label id="lblCriteria">Kriterien & Gewichtung (%)</label>
+            <label id="lblCompetences" style="display:none;">Kompetenzen (ohne Gewichtung)</label>
+            
+            <div id="criteriaContainer"></div>
+            <button class="btn-success btn-small" onclick="addCriterion()">+ Eintrag</button>
+            <div id="weightSum" class="sum-display">Summe: 0%</div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <button class="btn-danger" style="width:100%; margin-top:10px;" onclick="deleteCurrentCourse()">⚠️ Diesen Kurs endgültig löschen</button>
+            <button class="btn-primary btn-success" onclick="saveSetup()">Speichern</button>
+        </div>
+
+        <div id="tab-niveaus">
+            <h3>Basis-Niveaus verwalten</h3>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Lege hier das standardmäßige Leistungsniveau für jeden Schüler fest.</p>
+            <div id="niveauManagementList"></div>
+            <button class="btn-primary btn-success" onclick="saveNiveaus()" style="margin-top:20px;">Niveaus speichern</button>
+        </div>
+
+        <div id="tab-entry" style="display:none;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+                <input type="date" id="lessonDate"><input type="text" id="lessonTopic" placeholder="Thema">
+            </div>
+            <div id="gradingArea"></div>
+            <button class="btn-primary btn-success btn-sticky" onclick="saveLesson()">Stunde speichern</button>
+        </div>
+
+        <div id="tab-history" style="display:none;"><div id="historyList"></div></div>
+
+        <div id="tab-report" style="display:none;">
+            <div class="sort-controls">
+                <button class="btn-sort active" id="btnSortLast" onclick="sortReport('last')">Nachname</button>
+                <button class="btn-sort" id="btnSortFirst" onclick="sortReport('first')">Vorname</button>
+            </div>
+            <h3 id="reportTitle">Gesamtnoten (mit Bonus)</h3>
+            <button class="btn-primary" onclick="window.print()" style="background:#7f8c8d; margin-bottom: 15px; width: auto; display: inline-block;">🖨️ Bericht drucken / als PDF speichern</button>
+            <div class="print-header-info">Erstellt am: <script>document.write(new Date().toLocaleDateString())</script> | Kurs: <span id="printCourseName"></span> | Typ: <span id="printCourseType"></span></div>
+            <div id="reportCardContainer"></div>
+            
+            <div id="tableSek1" class="table-wrapper">
+                <table id="finalTable"><thead><tr><th class="col-left">Name</th><th>Niveau</th><th>Schnitt</th><th>Std.</th><th>Fehltage</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <div id="tableKompetenz" class="table-wrapper" style="display:none;">
+                <table id="kompetenzTable">
+                    <thead>
+                        <tr id="kompTableHead">
+                            <th class="col-left">Name</th>
+                            <th>Std.</th>
+                            <th>Fehltage</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <h3 style="margin-top:30px;" id="criteriaAnalysisTitle">Kriterien-Analyse</h3>
+            <div class="table-wrapper">
+                <table id="criteriaTable"><thead><tr id="critTableHead"></tr></thead><tbody></tbody></table>
+            </div>
+            <h3 style="margin-top:30px;">Kommentare & Anmerkungen</h3>
+            
+            <div class="sort-controls" style="margin-bottom: 10px; justify-content: flex-start;">
+                <button class="btn-sort active" id="btnSortCommentName" onclick="sortComments('name')">Nach Name (A-Z)</button>
+                <button class="btn-sort" id="btnSortCommentDate" onclick="sortComments('date')">Nach Datum (Neu ↔ Alt)</button>
+            </div>
+
+           <div class="table-wrapper" id="commentTableWrapper" style="display:none;">
+                <table id="commentTable">
+                    <thead>
+                        <tr>
+                            <th class="col-left" style="width: 25%;">Datum / Thema</th>
+                            <th class="col-left" style="width: 20%;">Schüler</th>
+                            <th class="col-left">Kommentar</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <p id="noCommentsText" style="text-align:center; color:#999; font-style:italic; margin-top:20px; display:none;">Keine Kommentare vorhanden.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DB_KEY = 'notenwerk_v20_text_final';
+    let courses = {};
+    let courseOrder = [];
+    let currentId = null;
+    let selectedColor = '#2c3e50';
+    let currentSortMode = 'last';
+    let currentCommentSortMode = 'name';
+    let isSortModeActive = false;
+
+    const COLORS = ['#2c3e50', '#27ae60', '#2980b9', '#8e44ad', '#d35400', '#c0392b', '#16a085', '#7f8c8d'];
+    const DEFAULTS_SEK1 = [{name: "Mitarbeit", w: 10}, {name: "Hausaufgaben", w: 10}, {name: "Meldungen", w: 10}, {name: "Gruppenarbeit", w: 10}, {name: "Test", w: 20}, {name: "Arbeit", w: 40}];
+    const DEFAULTS_KOMP = [{name: "Fachwissen"}, {name: "Erkenntnisgewinnung"}, {name: "Kommunikation"}, {name: "Bewertung"}];
+
+    // Texte für Kompetenzstufen
+    const KOMP_TEXTS = {
+        1: "Sicher",
+        2: "Überw. sicher",
+        3: "Teilw. sicher",
+        4: "Überw. unsicher",
+        5: "Unsicher",
+        0: ""
+    };
+
+    let pressTimer, activeButton = null;
+    let historyPressTimer, historyActiveButton = null;
+    let currentCommentContext = { lessonId: null, studentIndex: null, mode: null };
+    let tempLessonComments = {};
+    let currentPopoverTarget = null; 
+    let currentPopoverLevelOverride = null; 
+    let dragSrcEl = null;
+
+    window.onload = () => {
+        const data = localStorage.getItem(DB_KEY);
+        if (data) {
+            const parsed = JSON.parse(data);
+            courses = parsed.courses || {};
+            courseOrder = parsed.order || Object.keys(courses);
+        } else {
+            courses = {};
+            courseOrder = [];
+        }
+        initColorPicker();
+        renderDashboard();
+    };
+
+    function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify({ courses: courses, order: courseOrder })); }
+
+    // --- SORTIERLOGIK ---
+    function toggleSortMode() {
+        isSortModeActive = !isSortModeActive;
+        const btn = document.getElementById('toggleSortBtn');
+        const list = document.getElementById('courseList');
+        if (isSortModeActive) {
+            btn.innerText = '✅ Fertig'; btn.classList.remove('btn-outline'); btn.classList.add('btn-success');
+            list.classList.add('sort-mode');
+            list.querySelectorAll('.course-item').forEach(item => {
+                item.setAttribute('draggable', 'true');
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+        } else {
+            btn.innerText = '✏️ Anordnung bearbeiten'; btn.classList.remove('btn-success'); btn.classList.add('btn-outline');
+            list.classList.remove('sort-mode');
+            list.querySelectorAll('.course-item').forEach(item => {
+                item.setAttribute('draggable', 'false');
+                item.removeEventListener('dragstart', handleDragStart);
+                item.removeEventListener('dragover', handleDragOver);
+                item.removeEventListener('drop', handleDrop);
+                item.removeEventListener('dragend', handleDragEnd);
+            });
+            saveDB();
+        }
+    }
+    function moveCourseInArray(fromIndex, toIndex) { if (toIndex < 0 || toIndex >= courseOrder.length) return; const el = courseOrder.splice(fromIndex, 1)[0]; courseOrder.splice(toIndex, 0, el); renderDashboard(); if (!isSortModeActive) saveDB(); }
+    function moveCourseUp(id) { const idx = courseOrder.indexOf(id); if (idx > 0) moveCourseInArray(idx, idx - 1); }
+    function moveCourseDown(id) { const idx = courseOrder.indexOf(id); if (idx >= 0 && idx < courseOrder.length - 1) moveCourseInArray(idx, idx + 1); }
+    function handleDragStart(e) { dragSrcEl = this; e.dataTransfer.effectAllowed = 'move'; this.classList.add('dragging'); }
+    function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); return false; }
+    function handleDrop(e) { if (e.stopPropagation) e.stopPropagation(); const target = this.closest('.course-item'); if (dragSrcEl !== target) moveCourseInArray(courseOrder.indexOf(dragSrcEl.dataset.id), courseOrder.indexOf(target.dataset.id)); return false; }
+    function handleDragEnd() { this.classList.remove('dragging'); saveDB(); }
+
+    function handleCsvImport(input) {
+        const file = input.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split(/\r\n|\n/);
+            const students = [];
+            lines.forEach((line, i) => {
+                if (i === 0 || !line.trim()) return;
+                const parts = line.split(line.includes(';') ? ';' : ',');
+                if (parts.length >= 3 && parts[1].trim() && parts[2].trim()) students.push(parts[2].trim() + ' ' + parts[1].trim());
+            });
+            if (students.length > 0) {
+                const cur = document.getElementById('inpStudents').value;
+                document.getElementById('inpStudents').value = (cur.trim() ? cur.trim() + ', ' : '') + students.join(', ');
+                alert(students.length + ' Schüler importiert!');
+            }
+            input.value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    function initColorPicker() {
+        const container = document.getElementById('colorPicker'); if(!container) return; container.innerHTML = '';
+        COLORS.forEach(color => {
+            const div = document.createElement('div'); div.className = 'color-opt'; div.style.backgroundColor = color;
+            if (color === selectedColor) div.classList.add('selected');
+            div.onclick = () => { selectedColor = color; document.querySelectorAll('.color-opt').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); };
+            container.appendChild(div);
+        });
+    }
+
+    function renderDashboard() {
+        const list = document.getElementById('courseList'); list.innerHTML = '';
+        if (courseOrder.length === 0 && Object.keys(courses).length > 0) courseOrder = Object.keys(courses);
+        if (courseOrder.length === 0) { document.getElementById('noCourses').style.display = 'block'; return; }
+        document.getElementById('noCourses').style.display = 'none';
+        courseOrder.forEach(id => {
+            if (!courses[id]) return;
+            const c = courses[id];
+            const color = c.color || '#2c3e50';
+            const typeLabel = c.type === 'kompetenz' ? '🌱 Komp.' : '📊 Noten';
+            const li = document.createElement('li'); li.className = 'course-item'; li.dataset.id = id;
+            li.style.borderLeftColor = color; li.style.borderLeftWidth = '10px';
+            li.style.background = `linear-gradient(to right, ${color}15, transparent 20%), white`;
+            li.onclick = (e) => { if (e.target.closest('.sort-controls') || isSortModeActive) return; loadCourse(id); };
+            li.innerHTML = `<div style="flex:1;"><strong style="color:${color}; font-size:1.2rem;">${c.name || 'Unbenannt'}</strong><br><small style="color:#555;">${c.classname||'-'} | ${typeLabel} | ${c.students ? c.students.length:0} SuS</small></div>
+                <button class="btn-small" style="background:${color}; color:white; margin-left:10px;" onclick="loadCourse('${id}')">Öffnen</button>
+                <div class="course-controls" onclick="event.stopPropagation()"><button class="sort-btn" onclick="moveCourseUp('${id}')" style="color:${color}">▲</button><button class="sort-btn" onclick="moveCourseDown('${id}')" style="color:${color}">▼</button></div>`;
+            list.appendChild(li);
+        });
+    }
+
+    function createNewCourse() {
+        const id = 'c_' + Date.now();
+        selectedColor = '#2c3e50'; initColorPicker();
+        courses[id] = { name: '', classname: '', type: 'sek1', students: [], color: selectedColor, criteria: JSON.parse(JSON.stringify(DEFAULTS_SEK1)), lessons: [], studentLevels: {} };
+        courseOrder.unshift(id); saveDB(); loadCourse(id);
+    }
+
+    function loadCourse(id) {
+        if (isSortModeActive) return;
+        currentId = id;
+        const c = courses[id];
+        document.getElementById('view-dashboard').style.display = 'none';
+        document.getElementById('view-app').style.display = 'block';
+        document.getElementById('appTitle').innerText = c.name || 'Kurs';
+        document.getElementById('appTitle').style.color = c.color || '#2c3e50';
+        document.getElementById('inpName').value = c.name;
+        document.getElementById('inpClass').value = c.classname;
+        document.getElementById('inpStudents').value = c.students.join(', ');
+        const typeSelect = document.getElementById('courseType');
+        if(typeSelect) { typeSelect.value = c.type || 'sek1'; toggleSetupMode(); }
+        selectedColor = c.color || '#2c3e50'; initColorPicker();
+        renderCriteriaInputs();
+        if (!c.studentLevels) c.studentLevels = {};
+        c.students.forEach(s => { if (!c.studentLevels[s]) c.studentLevels[s] = 'msa'; });
+        switchTab('setup');
+    }
+
+    function showDashboard() { currentId = null; document.getElementById('view-app').style.display = 'none'; document.getElementById('view-dashboard').style.display = 'block'; renderDashboard(); }
+    function deleteCurrentCourse() { if(!currentId) return; if(confirm('Wirklich löschen?')) { delete courses[currentId]; courseOrder = courseOrder.filter(id => id !== currentId); saveDB(); showDashboard(); } }
+
+    function toggleSetupMode() {
+        const type = document.getElementById('courseType').value;
+        const lblCrit = document.getElementById('lblCriteria');
+        const lblKomp = document.getElementById('lblCompetences');
+        const weightSum = document.getElementById('weightSum');
+        const c = courses[currentId];
+        if (type === 'kompetenz') {
+            lblCrit.style.display = 'none'; lblKomp.style.display = 'block'; weightSum.style.display = 'none';
+            if(c.criteria && c.criteria.length > 0 && c.criteria[0].w !== undefined) c.criteria = c.criteria.map(item => ({ name: item.name }));
+            else if (!c.criteria || c.criteria.length === 0) c.criteria = JSON.parse(JSON.stringify(DEFAULTS_KOMP));
+        } else {
+            lblCrit.style.display = 'block'; lblKomp.style.display = 'none'; weightSum.style.display = 'block';
+            if(!c.criteria || c.criteria.length === 0 || c.criteria[0].w === undefined) c.criteria = JSON.parse(JSON.stringify(DEFAULTS_SEK1));
+            else c.criteria = c.criteria.map(item => ({ ...item, w: item.w || 10 }));
+        }
+        renderCriteriaInputs();
+    }
+
+    function renderCriteriaInputs() {
+        const c = courses[currentId];
+        const container = document.getElementById('criteriaContainer');
+        const type = document.getElementById('courseType').value;
+        container.innerHTML = '';
+        if (!c.criteria) c.criteria = [];
+        c.criteria.forEach((item, index) => {
+            const row = document.createElement('div'); row.className = 'crit-row';
+            let weightInput = '';
+            if (type === 'sek1') weightInput = '<input type="number" class="crit-weight" value="' + (item.w || 0) + '" placeholder="%" oninput="updateCrit(' + index + ', \'w\', this.value)">';
+            row.innerHTML = '<input type="text" class="crit-name" value="' + item.name + '" placeholder="Name" oninput="updateCrit(' + index + ', \'name\', this.value)">' + weightInput + '<button class="btn-danger btn-small" onclick="removeCrit(' + index + ')">X</button>';
+            container.appendChild(row);
+        });
+        if(type === 'sek1') calcSum();
+    }
+    function addCriterion() { const c = courses[currentId]; const type = document.getElementById('courseType').value; if(type === 'kompetenz') c.criteria.push({ name: "Neue Kompetenz" }); else c.criteria.push({ name: "Neues Kriterium", w: 0 }); renderCriteriaInputs(); }
+    function removeCrit(idx) { const c = courses[currentId]; if (c.criteria.length <= 1) return alert('Mind. 1 Eintrag!'); c.criteria.splice(idx, 1); renderCriteriaInputs(); }
+    function updateCrit(idx, field, val) { const c = courses[currentId]; if (field === 'w') val = parseFloat(val) || 0; c.criteria[idx][field] = val; if(document.getElementById('courseType').value === 'sek1') calcSum(); }
+    function calcSum() { const c = courses[currentId]; const sum = c.criteria.reduce((acc, item) => acc + (parseFloat(item.w) || 0), 0); const el = document.getElementById('weightSum'); if(!el) return; el.innerText = 'Summe: ' + sum + '%'; el.className = sum === 100 ? 'sum-display sum-ok' : 'sum-display sum-err'; return sum; }
+
+    function saveSetup() {
+        const c = courses[currentId];
+        const name = document.getElementById('inpName').value;
+        const cls = document.getElementById('inpClass').value;
+        const type = document.getElementById('courseType').value;
+        const stuRaw = document.getElementById('inpStudents').value;
+        if (!name || !stuRaw) return alert('Name und Schüler fehlen!');
+        if (type === 'sek1' && calcSum() !== 100 && !confirm('Summe nicht 100%. Trotzdem?')) return;
+        c.name = name; c.classname = cls; c.type = type; c.color = selectedColor;
+        c.students = stuRaw.split(',').map(s => s.trim()).filter(s => s);
+        c.criteria = c.criteria.filter(x => x.name.trim() !== '');
+        const newLevels = {};
+        c.students.forEach(s => { newLevels[s] = (c.studentLevels && c.studentLevels[s]) ? c.studentLevels[s] : 'msa'; });
+        c.studentLevels = newLevels;
+        saveDB(); alert('Gespeichert!');
+        if (type === 'kompetenz') switchTab('entry'); else switchTab('niveaus');
+    }
+    
+    function switchTab(tabId) {
+        const c = courses[currentId];
+        const isKompetenz = c && c.type === 'kompetenz';
+        const tabNiveaus = document.getElementById('tab-niveaus');
+        const btnNiveaus = document.getElementById('tab-btn-niveaus');
+        if (isKompetenz) { if (tabId === 'niveaus') tabId = 'entry'; tabNiveaus.style.display = 'none'; if(btnNiveaus) btnNiveaus.classList.add('hidden'); }
+        else { tabNiveaus.style.display = 'block'; if(btnNiveaus) btnNiveaus.classList.remove('hidden'); }
+        ['setup', 'entry', 'niveaus', 'history', 'report'].forEach(t => {
+            const el = document.getElementById('tab-'+t); const btn = document.querySelector('button[onclick="switchTab(\'' + t + '\')"]');
+            if(el) el.style.display = t === tabId ? 'block' : 'none';
+            if(btn) btn.classList.toggle('active', t === tabId);
+        });
+        if (tabId === 'entry') renderGrading();
+        if (tabId === 'niveaus') renderNiveauManagement();
+        if (tabId === 'history') renderHistory();
+        if (tabId === 'report') renderReports();
+    }
+
+    function renderNiveauManagement() {
+        const c = courses[currentId]; const list = document.getElementById('niveauManagementList'); list.innerHTML = '';
+        if (!c.studentLevels) c.studentLevels = {};
+        c.students.forEach((stu) => {
+            const lvl = c.studentLevels[stu] || 'msa';
+            const item = document.createElement('div'); item.className = 'niveau-list-item';
+            item.innerHTML = `<span class="student-name">${stu}</span><div class="niveau-controls">
+                <button class="ls-btn ls-esa ${lvl==='esa'?'active':''}" onclick="setBaseLevel('${stu}', 'esa')">ESA</button>
+                <button class="ls-btn ls-msa ${lvl==='msa'?'active':''}" onclick="setBaseLevel('${stu}', 'msa')">MSA</button>
+                <button class="ls-btn ls-ahr ${lvl==='ahr'?'active':''}" onclick="setBaseLevel('${stu}', 'ahr')">AHR</button></div>`;
+            list.appendChild(item);
+        });
+    }
+    function setBaseLevel(stu, lvl) { courses[currentId].studentLevels[stu] = lvl; renderNiveauManagement(); }
+    function saveNiveaus() { saveDB(); alert('Gespeichert!'); switchTab('entry'); }
+    // Niveau-Umrechnung: ESA (0) < MSA (1) < AHR (2).
+    // Grade are always normalized to the student's base niveau.
+    function niveauToIndex(niveau) {
+        const n = String(niveau || 'MSA').toUpperCase();
+        return n === 'ESA' ? 0 : (n === 'AHR' ? 2 : 1);
+    }
+    function convertGrade(grade, fromNiveau, toNiveau, mode) {
+        const maxGrade = mode === 'kompetenz' ? 5 : 6;
+        const value = Number(grade);
+        if (!Number.isFinite(value)) return null;
+        const converted = Math.round(value + niveauToIndex(toNiveau) - niveauToIndex(fromNiveau));
+        return Math.max(1, Math.min(maxGrade, converted));
+    }
+    function getConvertedGrade(gradeValue, gradeNiveau, studentNiveau, mode) {
+        if (String(gradeNiveau || 'MSA').toUpperCase() === String(studentNiveau || 'MSA').toUpperCase()) return Number(gradeValue);
+        return convertGrade(gradeValue, gradeNiveau, studentNiveau, mode);
+    }
+    function getLevelStage(lvl) { return niveauToIndex(lvl); }
+    
+    function setStudentLevel(sIdx, newLevel) {
+        const row = document.querySelector('.student-row[data-idx="' + sIdx + '"]'); if (!row) return;
+        row.dataset.level = newLevel;
+        row.classList.remove('level-esa', 'level-msa', 'level-ahr'); row.classList.add('level-' + newLevel);
+        const badge = row.querySelector('.level-badge'); badge.className = 'level-badge lb-' + newLevel; badge.innerText = newLevel.toUpperCase();
+        row.querySelectorAll('.ls-btn').forEach(b => b.classList.remove('active')); row.querySelector('.ls-' + newLevel).classList.add('active');
+        row.querySelectorAll('.g-btn').forEach(btn => { if(btn.dataset.val == 0) btn.dataset.level = newLevel; });
+        calcAvg(sIdx);
+    }
+
+    function renderGrading() {
+        const c = courses[currentId]; const area = document.getElementById('gradingArea'); area.innerHTML = '';
+        document.getElementById('lessonDate').valueAsDate = new Date(); document.getElementById('lessonTopic').value = '';
+        clearTempComments();
+        const isKompetenz = c.type === 'kompetenz'; const maxGrade = isKompetenz ? 5 : 6;
+
+        c.students.forEach((stu, sIdx) => {
+            const row = document.createElement('div'); row.className = 'student-row level-msa'; row.dataset.idx = sIdx;
+            const baseLevel = c.studentLevels[stu] || 'msa'; row.dataset.level = baseLevel;
+            const header = document.createElement('div'); header.className = 'student-header';
+            const infoDiv = document.createElement('div'); infoDiv.className = 'student-info';
+            const tempComment = getTempComment(sIdx);
+            infoDiv.innerHTML = `<span class="student-name">${stu}</span>
+                <span class="level-badge lb-${baseLevel}" style="${isKompetenz ? 'display:none;' : ''}">${baseLevel.toUpperCase()}</span>
+                <span class="comment-icon ${tempComment?'has-comment':''}" onclick="openCommentModalEntry(${sIdx}, '${stu.replace(/'/g, "\\'")}')" title="Kommentar">💬</span>`;
+            
+            const absentBtn = document.createElement('button'); absentBtn.className = 'absent-btn'; absentBtn.innerText = '✓ Da';
+            absentBtn.onclick = () => toggleAbsent(sIdx, absentBtn, row);
+            const avgSpan = document.createElement('span'); avgSpan.id = 'avg-' + sIdx; avgSpan.className = 'row-average'; avgSpan.innerText = '-';
+            
+            const switcher = document.createElement('div'); switcher.className = 'level-switcher';
+            switcher.style.display = isKompetenz ? 'none' : 'flex';
+            ['esa', 'msa', 'ahr'].forEach(lvl => {
+                const btn = document.createElement('button'); btn.className = 'ls-btn ls-' + lvl; btn.innerText = lvl.toUpperCase();
+                btn.onclick = (e) => { e.stopPropagation(); setStudentLevel(sIdx, lvl); };
+                switcher.appendChild(btn);
+            });
+            if(!isKompetenz) setStudentLevel(sIdx, baseLevel);
+
+            header.appendChild(infoDiv); header.appendChild(absentBtn); header.appendChild(avgSpan);
+            row.appendChild(header); row.appendChild(switcher);
+
+            const grid = document.createElement('div'); grid.className = 'grade-grid';
+            c.criteria.forEach((crit, cIdx) => {
+                const col = document.createElement('div'); col.className = 'grade-col';
+                col.innerHTML = `<span class="grade-label">${crit.name}</span>${isKompetenz ? '' : '<span class="grade-val">'+crit.w+'%</span><span class="grade-val" title="Testniveau; wird zur Schülerebene umgerechnet">Niveau je Note</span>'}`;
+                const btn = document.createElement('button');
+                btn.className = isKompetenz ? 'g-btn k-0' : 'g-btn g-0';
+                btn.id = 'g-' + sIdx + '-' + cIdx; btn.innerText = ''; btn.dataset.val = 0; btn.dataset.level = baseLevel;
+                btn.style.fontSize = isKompetenz ? '0.65rem' : '1.5rem';
+                
+                let timer;
+                const start = (e) => { e.preventDefault(); timer = setTimeout(() => handleGradeLongPress(btn, sIdx, cIdx), 500); };
+                const end = (e) => { e.preventDefault(); clearTimeout(timer); const pop = document.getElementById('globalGradePopover'); if (!pop || !pop.classList.contains('visible')) cycleGrade(sIdx, cIdx, btn, isKompetenz, maxGrade); };
+                
+                btn.addEventListener('touchstart', start, {passive: false}); btn.addEventListener('touchend', end);
+                btn.addEventListener('mousedown', () => { timer = setTimeout(() => handleGradeLongPress(btn, sIdx, cIdx), 500); });
+                btn.addEventListener('mouseup', () => { clearTimeout(timer); const pop = document.getElementById('globalGradePopover'); if (!pop || !pop.classList.contains('visible')) cycleGrade(sIdx, cIdx, btn, isKompetenz, maxGrade); });
+                
+                col.appendChild(btn); grid.appendChild(col);
+            });
+            row.appendChild(grid); area.appendChild(row);
+        });
+    }
+
+    function toggleAbsent(sIdx, btn, row) {
+        const isAbsent = btn.classList.contains('active');
+        const avgSpan = document.getElementById('avg-' + sIdx);
+        const inputs = row.querySelectorAll('.g-btn');
+        if (!isAbsent) {
+            btn.classList.add('active'); btn.innerText = '🚫 Fehlend'; avgSpan.innerText = '-'; avgSpan.style.textDecoration = 'line-through';
+            inputs.forEach(b => { b.disabled = true; b.style.opacity = '0.3'; });
+        } else {
+            btn.classList.remove('active'); btn.innerText = '✓ Da'; avgSpan.innerText = '-'; avgSpan.style.textDecoration = 'none';
+            inputs.forEach(b => { b.disabled = false; b.style.opacity = '1'; updateButtonVisual(b, 0, courses[currentId].type === 'kompetenz'); b.dataset.val = 0; b.dataset.level = row.dataset.level; });
+        }
+    }
+
+    function updateButtonVisual(btn, val, isKompetenz) {
+        btn.className = 'g-btn'; btn.dataset.val = val;
+        if (val === 0) { btn.classList.add(isKompetenz ? 'k-0' : 'g-0'); btn.innerText = ''; }
+        else {
+            if (isKompetenz) { btn.classList.add('k-' + val); btn.innerText = KOMP_TEXTS[val] || val; }
+            else { btn.classList.add('g-' + val); btn.innerText = val; }
+        }
+    }
+
+    function cycleGrade(sIdx, cIdx, btn, isKompetenz, maxGrade) {
+        if (btn.disabled) return;
+        let val = parseInt(btn.dataset.val || 0) + 1;
+        if (val > maxGrade) val = 0;
+        updateButtonVisual(btn, val, isKompetenz);
+        if(val === 0) { const row = btn.closest('.student-row'); btn.dataset.level = row ? row.dataset.level : 'msa'; }
+        calcAvg(sIdx);
+    }
+    function calcAvg(sIdx, studentNiveau, mode) {
+        const c = courses[currentId];
+        const row = document.querySelector('.student-row[data-idx="' + sIdx + '"]');
+        if (!c || !row) return;
+        const target = studentNiveau || row.dataset.level || (c.studentLevels[c.students[sIdx]] || 'msa');
+        const calcMode = mode || c.type;
+        let sum = 0, count = 0;
+        row.querySelectorAll('.g-btn').forEach((btn, i) => {
+            const value = parseInt(btn.dataset.val || 0, 10);
+            if (value > 0) {
+                const criterion = c.criteria[i] || {};
+                const source = btn.dataset.level || criterion.niveau || target;
+                const converted = getConvertedGrade(value, source, target, calcMode);
+                if (converted != null) { sum += converted; count++; }
+            }
+        });
+        const span = document.getElementById('avg-' + sIdx);
+        if (span) span.innerText = count ? (sum / count).toFixed(2) : '-';
+    }
+
+    // --- POPUP LOGIK ---
+    function setPopoverLevel(lvl) {
+        currentPopoverLevelOverride = lvl;
+        document.querySelectorAll('.gp-niv-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.querySelector('.gp-niv-' + lvl); if(activeBtn) activeBtn.classList.add('active');
+    }
+
+    function handleGradeLongPress(btn, sIdx, cIdx) {
+        activeButton = btn;
+        const isKompetenz = courses[currentId].type === 'kompetenz';
+        currentPopoverTarget = {sIdx, cIdx, mode: 'entry', isKompetenz: isKompetenz};
+        const row = btn.closest('.student-row');
+        currentPopoverLevelOverride = btn.dataset.level || (row ? row.dataset.level : 'msa');
+
+        const popover = document.getElementById('globalGradePopover');
+        if (!popover) return;
+
+        // Niveaus-Leiste ausblenden bei Kompetenz
+        const nivSelector = popover.querySelector('.niveau-selector');
+        if(nivSelector) nivSelector.style.display = isKompetenz ? 'none' : 'flex';
+
+        const rect = btn.getBoundingClientRect();
+        let leftPos = rect.left + (rect.width / 2);
+        if (leftPos < 140) leftPos = 150; if (leftPos > window.innerWidth - 140) leftPos = window.innerWidth - 150;
+        popover.style.left = leftPos + 'px'; popover.style.top = (rect.top - (isKompetenz ? 60 : 80)) + 'px';
+
+        document.querySelectorAll('.gp-niv-btn').forEach(b => b.classList.remove('active'));
+        const activeNiv = document.querySelector('.gp-niv-' + currentPopoverLevelOverride); if(activeNiv) activeNiv.classList.add('active');
+
+        // Buttons anpassen
+        const gradeButtons = popover.querySelectorAll('.gp-btn:not(.gp-niv-btn)');
+        gradeButtons.forEach(b => {
+            const v = parseInt(b.innerText);
+            b.style.display = 'flex';
+            if (isKompetenz) {
+                if (v > 5) b.style.display = 'none';
+                b.className = 'gp-btn';
+                if(v === 0) b.classList.add('gp-0'); else b.classList.add('gp-k' + v);
+            } else {
+                b.className = 'gp-btn';
+                if(v === 0) b.classList.add('gp-0'); else b.classList.add('gp-' + v);
+            }
+        });
+        popover.classList.add('visible');
+    }
+
+    function handleHistoryGradeLongPress(btn, inputId, sIdx, cIdx, currentLevel, isKompetenz) {
+        historyActiveButton = btn;
+        currentPopoverTarget = { inputId, sIdx, cIdx, mode: 'history', isKompetenz: isKompetenz };
+        currentPopoverLevelOverride = currentLevel;
+        const popover = document.getElementById('globalGradePopover'); if (!popover) return;
+
+        // Niveaus-Leiste ausblenden bei Kompetenz
+        const nivSelector = popover.querySelector('.niveau-selector');
+        if(nivSelector) nivSelector.style.display = isKompetenz ? 'none' : 'flex';
+
+        const rect = btn.getBoundingClientRect();
+        let leftPos = rect.left + (rect.width / 2);
+        if (leftPos < 140) leftPos = 150; if (leftPos > window.innerWidth - 140) leftPos = window.innerWidth - 150;
+        popover.style.left = leftPos + 'px'; popover.style.top = (rect.top - (isKompetenz ? 60 : 80)) + 'px';
+
+        document.querySelectorAll('.gp-niv-btn').forEach(b => b.classList.remove('active'));
+        const activeNiv = document.querySelector('.gp-niv-' + currentPopoverLevelOverride); if(activeNiv) activeNiv.classList.add('active');
+
+        const gradeButtons = popover.querySelectorAll('.gp-btn:not(.gp-niv-btn)');
+        gradeButtons.forEach(b => {
+            const v = parseInt(b.innerText);
+            b.style.display = 'flex';
+            if (isKompetenz) {
+                if (v > 5) b.style.display = 'none';
+                b.className = 'gp-btn'; if(v===0) b.classList.add('gp-0'); else b.classList.add('gp-k'+v);
+            } else {
+                b.className = 'gp-btn'; if(v===0) b.classList.add('gp-0'); else b.classList.add('gp-'+v);
+            }
+        });
+        popover.classList.add('visible');
+    }
+
+    function setGradeFromPopover(grade) {
+        const isKompetenz = currentPopoverTarget && currentPopoverTarget.isKompetenz;
+        if (currentPopoverTarget && currentPopoverTarget.mode === 'history') {
+            if (historyActiveButton) {
+                updateButtonVisual(historyActiveButton, grade, isKompetenz);
+                if (currentPopoverLevelOverride) historyActiveButton.dataset.level = currentPopoverLevelOverride;
+                const input = document.getElementById(currentPopoverTarget.inputId); if(input) input.value = grade;
+            }
+        } else {
+            if (activeButton) {
+                updateButtonVisual(activeButton, grade, isKompetenz);
+                if (currentPopoverLevelOverride) activeButton.dataset.level = currentPopoverLevelOverride;
+                if (activeButton.id.startsWith('g-')) { const parts = activeButton.id.split('-'); calcAvg(parseInt(parts[1])); }
+            }
+        }
+        closePopover(); currentPopoverTarget = null; currentPopoverLevelOverride = null;
+    }
+
+    function closePopover() {
+        const popover = document.getElementById('globalGradePopover');
+        if (popover) { popover.classList.remove('visible'); popover.querySelector('.niveau-selector').style.display = 'flex'; } // Reset
+        activeButton = null; historyActiveButton = null;
+    }
+
+    document.addEventListener('click', function(e) {
+        const popover = document.getElementById('globalGradePopover');
+        if (popover && !popover.contains(e.target) && !e.target.classList.contains('g-btn') && !e.target.classList.contains('gp-btn')) closePopover();
+    });
+
+    function saveLesson() {
+        const c = courses[currentId];
+        const date = document.getElementById('lessonDate').value; const topic = document.getElementById('lessonTopic').value;
+        if (!date) return alert('Datum fehlt!');
+        if (!topic || topic.trim() === '') if (!confirm('Ohne Thema speichern?')) return;
+
+        const grades = c.students.map((_, sIdx) => {
+            const btn = document.querySelector(`.student-row[data-idx="${sIdx}"] .absent-btn`);
+            if (btn && btn.classList.contains('active')) return null;
+            const rowGrades = [];
+            c.criteria.forEach((_, i) => {
+                const gradeBtn = document.getElementById('g-' + sIdx + '-' + i);
+                if (gradeBtn) { const val = parseInt(gradeBtn.dataset.val || 0); if (val === 0) rowGrades.push(null); else rowGrades.push({ val: val, level: gradeBtn.dataset.level || 'msa' }); }
+                else rowGrades.push(null);
+            });
+            return rowGrades;
+        });
+        const lessonComments = {}; c.students.forEach((_, idx) => { const t = getTempComment(idx); if (t !== '') lessonComments[idx] = t; });
+        c.lessons.push({ id: Date.now(), date, topic: topic || 'Ohne Thema', grades, comments: lessonComments });
+        clearTempComments(); saveDB(); alert('Gespeichert!'); switchTab('history');
+    }
+
+    function renderHistory() {
+        const c = courses[currentId]; const div = document.getElementById('historyList'); div.innerHTML = '';
+        if (!c.lessons.length) { div.innerHTML = '<p>Keine Einträge.</p>'; return; }
+        const reversed = c.lessons.slice().reverse();
+        const isKompetenz = c.type === 'kompetenz'; const maxGrade = isKompetenz ? 5 : 6;
+        
+        reversed.forEach(l => {
+            const item = document.createElement('div'); item.style.cssText = "background:white; border:1px solid #ddd; margin-bottom:15px; border-radius:12px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.05);";
+            let sSum = 0, sCnt = 0;
+            l.grades.forEach(g => { if (g) g.forEach(obj => { if(obj && obj.val > 0){ sSum += obj.val; sCnt++; } }); });
+            const avg = sCnt ? (sSum/sCnt).toFixed(1) : '-';
+
+            let formHtml = `<div style="padding:15px; display:none; position:relative;" id="detail-${l.id}">
+                <button id="stickySaveBtn_${l.id}" class="btn-success btn-sticky-fixed" onclick="updateLesson(${l.id})">💾 Speichern</button><hr style="border:0; border-top:1px solid #eee; margin:20px 0;">`;
+
+            c.students.forEach((stu, sIdx) => {
+                let studentData = l.grades[sIdx]; let isAbsent = (studentData === null);
+                if (studentData === undefined) { studentData = new Array(c.criteria.length).fill(null); l.grades[sIdx] = studentData; isAbsent = false; }
+                const baseLevel = c.studentLevels[stu] || 'msa';
+                let currentLvl = baseLevel;
+                if (!isAbsent && studentData.length > 0) { const first = studentData.find(obj => obj && obj.level); if (first && first.level) currentLvl = first.level; }
+
+                let rowBg = '#f4f9fd'; if (currentLvl === 'esa') rowBg = '#f9fdf9'; if (currentLvl === 'ahr') rowBg = '#fbf4fd';
+                const borderStyle = isKompetenz ? '' : `border-left: 5px solid ${currentLvl==='esa'?'var(--esa-color)':(currentLvl==='ahr'?'var(--ahr-color)':'var(--msa-color)')}`;
+                
+                formHtml += `<div style="background:${rowBg}; ${borderStyle}; padding:15px 10px; margin-bottom:20px; border-radius:8px; border:1px solid #eee;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                    <span style="font-weight:bold; font-size:1.2rem; color:var(--primary);">${stu}</span>
+                    <span class="comment-icon ${getCommentText(l,sIdx)?'has-comment':''}" onclick="openCommentModal(${l.id}, ${sIdx}, '${stu.replace(/'/g, "\\'")}', '${getCommentText(l,sIdx).replace(/'/g, "\\'")}')" title="Kommentar">💬</span>`;
+                
+                if(!isKompetenz) {
+                    let badgeColor = 'var(--msa-color)'; if (currentLvl === 'esa') badgeColor = 'var(--esa-color)'; if (currentLvl === 'ahr') badgeColor = 'var(--ahr-color)';
+                    formHtml += `<span style="background:${badgeColor}; color:white; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:bold;">${currentLvl}</span>`;
+                }
+                
+                const absentBtnId = 'absent-btn-' + l.id + '-' + sIdx; const absentInputId = 'absent-input-' + l.id + '-' + sIdx;
+                let statusText = isAbsent ? '🚫 Fehlend' : '✓ Da';
+                let statusBg = isAbsent ? 'var(--absent-bg)' : '#ecf0f1';
+                let statusColor = isAbsent ? 'var(--absent-text)' : '#333';
+                let statusBorder = isAbsent ? '2px solid var(--absent-text)' : 'none';
+                
+                formHtml += `<input type="hidden" id="${absentInputId}" value="${isAbsent?'1':'0'}">
+                    <button id="${absentBtnId}" onclick="toggleAbsentInHistory('${absentBtnId}', '${absentInputId}', ${sIdx}, this, ${isKompetenz}, ${maxGrade})" style="background:${statusBg}; color:${statusColor}; padding:5px 15px; border-radius:20px; font-size:0.9rem; font-weight:bold; border:${statusBorder}; cursor:pointer;">${statusText}</button>
+                    <span style="font-weight:bold; font-size:1.3rem; color:var(--primary); min-width:50px; text-align:right;">${isAbsent ? '-' : avg}</span></div></div>`;
+
+                if (!isKompetenz) {
+                    const lvlInputId = 'edit-lvl-' + l.id + '-' + sIdx;
+                    formHtml += `<div style="display:flex; gap:5px; margin-bottom:15px;">`;
+                    ['esa', 'msa', 'ahr'].forEach(lvl => {
+                        const isActive = (lvl === currentLvl);
+                        let btnBg = 'white', btnColor = '#777', btnBorder = '1px solid #ccc', btnOpacity = '0.7';
+                        if (isActive) { btnOpacity = '1'; btnBorder = '2px solid #333'; if(lvl==='esa'){btnBg='var(--esa-color)';btnColor='white';} if(lvl==='msa'){btnBg='var(--msa-color)';btnColor='white';} if(lvl==='ahr'){btnBg='var(--ahr-color)';btnColor='white';} }
+                        formHtml += `<button type="button" onclick="setTempLevel('${lvlInputId}', '${lvl}', this)" style="flex:1; max-width:70px; padding:6px 10px; border-radius:15px; border:${btnBorder}; background:${btnBg}; color:${btnColor}; font-weight:bold; font-size:0.75rem; opacity:${btnOpacity};">${lvl}</button>`;
+                    });
+                    formHtml += `</div><input type="hidden" id="${lvlInputId}" value="${currentLvl}">`;
+                }
+
+                if (isAbsent) { formHtml += '<div style="color:#999; font-style:italic; padding:30px; text-align:center;">Abwesend</div>'; }
+                else {
+                    formHtml += '<div class="grade-grid" style="display:flex; gap:10px; overflow-x:auto;">';
+                    c.criteria.forEach((crit, cIdx) => {
+                        let obj = (cIdx < studentData.length) ? studentData[cIdx] : null;
+                        const currentVal = (obj && obj.val) ? obj.val : 0;
+                        const currentCriterionLevel = (obj && obj.level) ? obj.level : currentLvl;
+                        const valInputId = 'edit-val-' + l.id + '-' + sIdx + '-' + cIdx;
+                        let btnClass = isKompetenz ? 'g-btn k-0' : 'g-btn g-0';
+                        let btnText = '';
+                        if (currentVal > 0) { if(isKompetenz){btnClass='g-btn k-'+currentVal; btnText=KOMP_TEXTS[currentVal];} else{btnClass='g-btn g-'+currentVal; btnText=currentVal;} }
+                        
+                        formHtml += `<div class="grade-col" style="min-width:85px;"><span class="grade-label">${crit.name}</span><span class="grade-val">${isKompetenz?'':crit.w+'%'}</span>
+                            <button type="button" id="btn-${valInputId}" class="${btnClass}" data-level="${currentCriterionLevel}" data-val="${currentVal}"
+                            onclick="cycleTempGrade('${valInputId}', this, ${maxGrade}, ${isKompetenz})"
+                            onmousedown="historyPressTimer=setTimeout(()=>handleHistoryGradeLongPress(this,'${valInputId}',${sIdx},${cIdx},'${currentCriterionLevel}',${isKompetenz}),500)"
+                            onmouseup="clearTimeout(historyPressTimer)"
+                            ontouchstart="event.preventDefault();historyPressTimer=setTimeout(()=>handleHistoryGradeLongPress(this,'${valInputId}',${sIdx},${cIdx},'${currentCriterionLevel}',${isKompetenz}),500)"
+                            ontouchend="event.preventDefault();clearTimeout(historyPressTimer)"
+                            style="width:60px;height:60px;border-radius:50%;font-weight:bold;border:2px solid rgba(0,0,0,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:2px;line-height:1.1;font-size:${isKompetenz?'0.65rem':'1rem'};">${btnText}</button>
+                            <input type="hidden" id="${valInputId}" value="${currentVal}"></div>`;
+                    });
+                    formHtml += '</div>';
+                }
+                formHtml += '</div>';
+            });
+            formHtml += `<button class="btn-danger" style="width:100%;padding:12px;margin-top:20px;" onclick="deleteLesson(${l.id})">🗑️ Löschen</button></div>`;
+            
+            const headerHtml = `<div style="padding:15px;background:#f9f9f9;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;" onclick="toggleDetail(${l.id})">
+                <div><span style="font-weight:bold;">${l.date}</span> <span style="color:#666;">- ${l.topic}</span></div>
+                <div style="font-weight:bold; color:var(--primary); font-size:1.3rem; background:white; padding:5px 15px; border-radius:20px; border:1px solid #ddd;">Ø: ${avg}</div>
+                </div>`;
+
+            item.innerHTML = headerHtml + formHtml;
+            div.appendChild(item);
+        });
+    }
+    
+    function toggleAbsentInHistory(btnId, inputId, sIdx, btnElement, isKompetenz, maxGrade) {
+        const input = document.getElementById(inputId);
+        const isCurrentlyAbsent = (input.value === '1');
+        const lessonIdPart = btnId.split('-')[2]; 
+        const c = courses[currentId];
+        let studentContainer = btnElement.closest('div[style*="background"]');
+
+        if (!isCurrentlyAbsent) {
+            input.value = '1'; btnElement.innerText = '🚫 Fehlend';
+            btnElement.style.background = 'var(--absent-bg)'; btnElement.style.color = 'var(--absent-text)'; btnElement.style.border = '2px solid var(--absent-text)';
+            let gradeArea = studentContainer.querySelector('.grade-grid');
+            if (gradeArea) gradeArea.outerHTML = '<div style="color:#999; font-style:italic; padding:30px; text-align:center;">Abwesend</div>';
+        } else {
+            input.value = '0'; btnElement.innerText = '✓ Da';
+            btnElement.style.background = '#ecf0f1'; btnElement.style.color = '#333'; btnElement.style.border = 'none';
+            const placeholder = studentContainer.querySelector('div[style*="color:#999"]');
+            if (placeholder && placeholder.innerText.includes('Abwesend')) {
+                const lvlInput = document.getElementById('edit-lvl-' + lessonIdPart + '-' + sIdx);
+                const currentLvl = lvlInput ? lvlInput.value : 'msa';
+                let gridHtml = '<div class="grade-grid" style="display:flex; gap:10px; overflow-x:auto;">';
+                c.criteria.forEach((crit, cIdx) => {
+                    const valInputId = 'edit-val-' + lessonIdPart + '-' + sIdx + '-' + cIdx;
+                    gridHtml += `<div class="grade-col" style="min-width:85px;"><span class="grade-label">${crit.name}</span><span class="grade-val">${isKompetenz?'':crit.w+'%'}</span>
+                        <button type="button" id="btn-${valInputId}" class="${isKompetenz?'g-btn k-0':'g-btn g-0'}" data-val="0"
+                        onclick="cycleTempGrade('${valInputId}', this, ${maxGrade}, ${isKompetenz})"
+                        style="width:60px;height:60px;border-radius:50%;font-weight:bold;border:2px solid rgba(0,0,0,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:${isKompetenz?'0.65rem':'1rem'};"></button>
+                        <input type="hidden" id="${valInputId}" value="0"></div>`;
+                });
+                gridHtml += '</div>';
+                placeholder.outerHTML = gridHtml;
+            }
+        }
+    }
+
+    function toggleDetail(id) {
+        const el = document.getElementById('detail-' + id);
+        const btn = document.getElementById('stickySaveBtn_' + id);
+        if (el) {
+            const isHidden = el.style.display === 'none' || el.style.display === '';
+            document.querySelectorAll('[id^="detail-"]').forEach(d => { d.style.display = 'none'; const b = document.getElementById('stickySaveBtn_' + d.id.replace('detail-', '')); if(b) b.style.display = 'none'; });
+            el.style.display = isHidden ? 'block' : 'none';
+            if (btn) btn.style.display = isHidden ? 'block' : 'none';
+        }
+    }
+
+    function deleteLesson(id) { const c = courses[currentId]; c.lessons = c.lessons.filter(l => l.id !== id); saveDB(); renderHistory(); }
+    
+    function setTempLevel(inputId, level, btnElement) {
+        document.getElementById(inputId).value = level;
+        let parent = btnElement.parentElement;
+        parent.querySelectorAll('button').forEach(b => { b.style.opacity = '0.7'; b.style.background = 'white'; b.style.color = '#777'; b.style.border = '1px solid #ccc'; b.style.transform = 'scale(1)'; });
+        btnElement.style.opacity = '1'; btnElement.style.transform = 'scale(1.05)'; btnElement.style.border = '2px solid #333';
+        if(level === 'esa') { btnElement.style.background = 'var(--esa-color)'; btnElement.style.color = 'white'; }
+        if(level === 'msa') { btnElement.style.background = 'var(--msa-color)'; btnElement.style.color = 'white'; }
+        if(level === 'ahr') { btnElement.style.background = 'var(--ahr-color)'; btnElement.style.color = 'white'; }
+    }
+
+    function cycleTempGrade(inputId, btnElement, maxGrade, isKompetenz) {
+        let val = parseInt(btnElement.dataset.val || 0) + 1;
+        if (val > maxGrade) val = 0;
+        updateButtonVisual(btnElement, val, isKompetenz);
+        document.getElementById(inputId).value = val;
+    }
+
+    function updateLesson(lessonId) {
+        const c = courses[currentId];
+        const lesson = c.lessons.find(l => l.id === lessonId);
+        if (!lesson) return alert('Fehler: Stunde nicht gefunden.');
+        const isKompetenz = c.type === 'kompetenz';
+        let changesCount = 0;
+
+        c.students.forEach((stu, sIdx) => {
+            const absentInput = document.getElementById('absent-input-' + lessonId + '-' + sIdx);
+            const isAbsent = (absentInput && absentInput.value === '1');
+            if (isAbsent) { if (lesson.grades[sIdx] !== null) changesCount++; lesson.grades[sIdx] = null; return; }
+            
+            const lvlInput = document.getElementById('edit-lvl-' + lessonId + '-' + sIdx);
+            const fallbackLvl = lvlInput ? lvlInput.value : 'msa';
+            let newGradesArray = [];
+            let hasChanges = false;
+            const currentGrades = lesson.grades[sIdx] || new Array(c.criteria.length).fill(null);
+
+            c.criteria.forEach((_, cIdx) => {
+                const valInputId = 'edit-val-' + lessonId + '-' + sIdx + '-' + cIdx;
+                const valInput = document.getElementById(valInputId);
+                const gradeBtn = document.getElementById('btn-' + valInputId);
+                let valFromInput = parseInt(valInput ? valInput.value : 0) || 0;
+                let levelFromBtn = (gradeBtn && gradeBtn.dataset.level) ? gradeBtn.dataset.level : fallbackLvl;
+                let originalVal = (currentGrades[cIdx]) ? currentGrades[cIdx].val : null;
+                let originalLevel = (currentGrades[cIdx]) ? currentGrades[cIdx].level : fallbackLvl;
+
+                let finalVal = (valFromInput > 0) ? valFromInput : null;
+                if (finalVal !== originalVal || levelFromBtn !== originalLevel) hasChanges = true;
+                newGradesArray.push({ val: finalVal, level: levelFromBtn });
+            });
+
+            if (hasChanges) { lesson.grades[sIdx] = newGradesArray; changesCount++; }
+        });
+
+        if (changesCount > 0) { saveDB(); alert('Gespeichert! (' + changesCount + ' Änderungen)'); renderHistory(); }
+        else if(confirm('Keine Änderungen erkannt. Ansicht aktualisieren?')) renderHistory();
+    }
+
+    // Rückwärtskompatibler Name für externe Aufrufer/ältere gespeicherte Ansichten.
+    function saveLessonEdits(lessonId) { return updateLesson(lessonId); }
+
+    function sortReport(mode) {
+        currentSortMode = mode;
+        document.getElementById('btnSortLast').classList.toggle('active', mode==='last');
+        document.getElementById('btnSortFirst').classList.toggle('active', mode==='first');
+        renderReports();
+    }
+
+    function sortComments(mode) {
+        currentCommentSortMode = mode;
+        document.getElementById('btnSortCommentName').classList.toggle('active', mode === 'name');
+        document.getElementById('btnSortCommentDate').classList.toggle('active', mode === 'date');
+        renderReports();
+    }
+    
+    function getSortKey(name) {
+        const parts = name.split(' ');
+        if (parts.length < 2) return name.toLowerCase();
+        return currentSortMode === 'last' ? parts[parts.length-1].toLowerCase() : parts[0].toLowerCase();
+    }
+    
+    function renderReports() {
+        const c = courses[currentId];
+        const isKompetenz = c.type === 'kompetenz';
+        
+        // UI Umschaltung
+        document.getElementById('reportTitle').innerText = isKompetenz ? "Kompetenzübersicht" : "Gesamtnoten (mit Bonus)";
+        document.getElementById('tableSek1').style.display = isKompetenz ? 'none' : 'block';
+        document.getElementById('tableKompetenz').style.display = isKompetenz ? 'block' : 'none';
+        document.getElementById('criteriaAnalysisTitle').style.display = isKompetenz ? 'none' : 'block';
+        document.getElementById('printCourseType').innerText = isKompetenz ? "Kompetenz (5-6)" : "Noten (7-10)";
+
+        const tbody = document.querySelector('#finalTable tbody');
+        const kompBody = document.querySelector('#kompetenzTable tbody');
+        const kompHead = document.getElementById('kompTableHead');
+        const critBody = document.querySelector('#criteriaTable tbody');
+        const critHead = document.getElementById('critTableHead');
+        const cardContainer = document.getElementById('reportCardContainer');
+        // Tabellen bei jedem Rendern leeren, damit keine alten Zeilen dupliziert werden.
+        tbody.innerHTML = ''; kompBody.innerHTML = ''; critBody.innerHTML = '';
+        
+        if (!cardContainer) {
+            const div = document.createElement('div'); div.id = 'reportCardContainer';
+            document.querySelector('#tab-report').insertBefore(div, document.querySelector('#tableSek1'));
+        } else { cardContainer.innerHTML = ''; }
+
+        if (!c.lessons.length) { 
+            if(!isKompetenz) tbody.innerHTML = '<tr><td colspan="5">Keine Daten</td></tr>';
+            else kompBody.innerHTML = '<tr><td colspan="' + (c.criteria.length + 2) + '">Keine Daten</td></tr>';
+            cardContainer.innerHTML = '<p style="text-align:center; color:#999;">Keine Bewertungen.</p>';
+            return; 
+        }
+
+        // Header bauen
+        if(isKompetenz) {
+            let hHtml = '<th class="col-left">Name</th>';
+            c.criteria.forEach(k => { hHtml += '<th>' + k.name + '</th>'; });
+            hHtml += '<th>Std.</th><th>Fehltage</th>';
+            kompHead.innerHTML = hHtml;
+        } else {
+            let hHtml = '<th class="col-left">Name</th><th>Niveau</th>';
+            c.criteria.forEach(k => { hHtml += '<th>' + k.name + '<br><small>' + k.w + '%</small></th>'; });
+            hHtml += '<th>Gesamt-Ø</th>';
+            critHead.innerHTML = hHtml;
+        }
+
+        const studentData = c.students.map((stu, sIdx) => {
+            let totalSum = 0, lessonCount = 0, absent = 0;
+            const critSums = new Array(c.criteria.length).fill(0);
+            const critCnts = new Array(c.criteria.length).fill(0);
+            const critDetails = c.criteria.map(() => []);
+            let hasGrades = false;
+            const targetLevel = c.studentLevels[stu] || 'msa';
+            const targetStage = getLevelStage(targetLevel);
+
+            c.lessons.forEach(l => {
+                const g = l.grades[sIdx];
+                if (g === null) { absent++; return; }
+                let lSum = 0, lWeight = 0, lHas = false;
+                g.forEach((obj, i) => {
+                    if (obj && obj.val > 0) {
+                        const originalVal = obj.val;
+                        const criterion = c.criteria[i] || {};
+                        const sourceNiveau = obj.level || criterion.niveau || 'msa';
+                        const val = getConvertedGrade(originalVal, sourceNiveau, targetLevel, c.type);
+                        const w = criterion.w || 1;
+                        lSum += val * w; lWeight += w;
+                        critSums[i] += val; critCnts[i]++;
+                        critDetails[i].push({ original: originalVal, converted: val, niveau: sourceNiveau });
+                        lHas = true; hasGrades = true;
+                    }
+                });
+                if (lHas && lWeight > 0) { totalSum += (lSum / lWeight); lessonCount++; }
+            });
+            return { name: stu, absent, lessonCount, finalAvg: (lessonCount > 0 && hasGrades) ? (totalSum / lessonCount).toFixed(2) : '-', dominantLevel: targetLevel, critSums, critCnts, critDetails, hasGrades };
+        });
+
+        studentData.sort((a, b) => getSortKey(a.name).localeCompare(getSortKey(b.name)));
+
+        // Tabellen füllen
+        if (!isKompetenz) {
+            studentData.forEach(d => {
+                const cls = d.finalAvg !== '-' ? 'bg-' + Math.round(d.finalAvg) : '';
+                const txtCol = (cls && (d.finalAvg <= 2 || d.finalAvg == 4 || d.finalAvg == 6)) ? 'white' : 'black';
+                const lvlCol = d.dominantLevel === 'esa' ? 'var(--esa-color)' : (d.dominantLevel === 'ahr' ? 'var(--ahr-color)' : 'var(--msa-color)');
+                
+                tbody.innerHTML += `<tr><td class="col-left"><strong>${d.name}</strong></td>
+                    <td><span style="background:${lvlCol}; color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${d.dominantLevel}</span></td>
+                    <td class="${cls}" style="color:${txtCol}; font-weight:bold;">${d.finalAvg}</td>
+                    <td>${d.lessonCount}</td><td class="${d.absent?'text-absent':''}">${d.absent}</td></tr>`;
+
+                let critHtml = `<td class="col-left"><strong>${d.name}</strong></td><td><span style="background:${lvlCol}; color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${d.dominantLevel}</span></td>`;
+                d.critSums.forEach((sum, i) => {
+                    const avg = d.critCnts[i] ? (sum / d.critCnts[i]).toFixed(1) : '-';
+                    const bg = avg !== '-' ? 'bg-' + Math.round(avg) : '';
+                    const col = (bg && (avg <= 2 || avg == 4 || avg == 6)) ? 'white' : 'black';
+                    const detail = d.critDetails[i] || [];
+                    const conversionNote = detail.some(x => x.original !== x.converted) ? '<br><small style="font-weight:normal;">' + detail.map(x => x.original + '→' + x.converted + ' (' + String(x.niveau).toUpperCase() + ')').join(', ') + '</small>' : '';
+                    critHtml += `<td class="${bg}" style="color:${col}; font-weight:bold;" title="Original → umgerechnet">${avg}${conversionNote}</td>`;
+                });
+                critHtml += `<td class="${cls}" style="color:${txtCol}; font-weight:bold;">${d.finalAvg}</td>`;
+                critBody.innerHTML += '<tr>' + critHtml + '</tr>';
+            });
+        } else {
+            // KOMPETENZ TABELLE MIT TEXTEN
+            studentData.forEach(d => {
+                let rowHtml = `<tr><td class="col-left"><strong>${d.name}</strong></td>`;
+                d.critSums.forEach((sum, i) => {
+                    const avg = d.critCnts[i] ? (sum / d.critCnts[i]).toFixed(1) : '-';
+                    const valInt = avg !== '-' ? Math.round(avg) : 0;
+                    // HIER: TEXT STATT ZAHL
+                    const displayText = valInt > 0 ? KOMP_TEXTS[valInt] : '-';
+                    const bgClass = valInt > 0 ? 'bg-k' + valInt : '';
+                    const txtCol = (valInt === 3) ? '#333' : 'white';
+                    rowHtml += `<td class="${bgClass}" style="color:${txtCol}; font-weight:bold; font-size:0.85rem;">${displayText}</td>`;
+                });
+                rowHtml += `<td>${d.lessonCount}</td><td class="${d.absent?'text-absent':''}">${d.absent}</td></tr>`;
+                kompBody.innerHTML += rowHtml;
+
+                // Kriterien Analyse (Kompetenz)
+                let critHtml = `<td class="col-left"><strong>${d.name}</strong></td>`;
+                d.critSums.forEach((sum, i) => {
+                    const avg = d.critCnts[i] ? (sum / d.critCnts[i]).toFixed(1) : '-';
+                    const valInt = avg !== '-' ? Math.round(avg) : 0;
+                    const displayText = valInt > 0 ? KOMP_TEXTS[valInt] : '-';
+                    const bgClass = valInt > 0 ? 'bg-k' + valInt : '';
+                    const txtCol = (valInt === 3) ? '#333' : 'white';
+                    critHtml += `<td class="${bgClass}" style="color:${txtCol}; font-weight:bold; font-size:0.85rem;">${displayText}</td>`;
+                });
+                critHtml += '<td>-</td>';
+                critBody.innerHTML += '<tr>' + critHtml + '</tr>';
+            });
+        }
+
+        // Report Cards
+        studentData.forEach(d => {
+            const lvlCol = d.dominantLevel === 'esa' ? 'var(--esa-color)' : (d.dominantLevel === 'ahr' ? 'var(--ahr-color)' : 'var(--msa-color)');
+            let html = `<div class="report-card"><div class="rc-header"><span class="rc-name">${d.name}</span>
+                <span class="rc-level" style="background:${lvlCol}; ${isKompetenz?'display:none;':''}">${d.dominantLevel}</span></div><div class="rc-grid">`;
+            
+            d.critSums.forEach((sum, i) => {
+                const avg = d.critCnts[i] ? (sum / d.critCnts[i]).toFixed(1) : '-';
+                const valInt = avg !== '-' ? Math.round(avg) : 0;
+                // HIER: TEXT STATT ZAHL FÜR KOMPETENZ
+                const displayText = isKompetenz ? (valInt > 0 ? KOMP_TEXTS[valInt] : '-') : (valInt > 0 ? valInt : '-');
+                
+                let bgCol = '#eee', txtCol = '#ccc';
+                if (valInt > 0) {
+                    if (isKompetenz) { bgCol = 'var(--k'+valInt+')'; txtCol = (valInt===3)?'#333':'white'; }
+                    else { bgCol = (valInt===3)?'var(--g3)':'var(--g'+valInt+')'; txtCol = (valInt===3)?'#333':'white'; }
+                }
+                html += `<div class="rc-item"><span class="rc-label">${c.criteria[i].name}</span>
+                    <div class="rc-grade" style="background:${bgCol}; color:${txtCol}; font-size:0.8rem;">${displayText}</div></div>`;
+            });
+
+            if (!isKompetenz) {
+                const avgInt = d.finalAvg !== '-' ? Math.round(d.finalAvg) : 0;
+                const avgBg = d.finalAvg !== '-' ? (avgInt===3?'var(--g3)':'var(--g'+avgInt+')') : '#eee';
+                const avgCol = d.finalAvg !== '-' ? (avgInt===3?'#333':'white') : '#ccc';
+                html += `<div class="rc-item" style="border:2px solid var(--primary);"><span class="rc-label" style="font-weight:bold;">Ø Gesamt</span>
+                    <div class="rc-grade rc-g-avg" style="background:${avgBg}; color:${avgCol}">${d.finalAvg}</div></div>`;
+            }
+            html += `</div><div class="rc-footer"><span>Std: ${d.lessonCount}</span><span>Fehlt: ${d.absent}</span></div></div>`;
+            cardContainer.innerHTML += html;
+        });
+
+        // Kommentare
+        const commentBody = document.querySelector('#commentTable tbody');
+        const commentWrapper = document.getElementById('commentTableWrapper');
+        const noCommentsText = document.getElementById('noCommentsText');
+        commentBody.innerHTML = '';
+        let allComments = [];
+        c.lessons.forEach(l => {
+            if (!l.comments) return;
+            Object.keys(l.comments).forEach(sIdxKey => {
+                const sIdx = parseInt(sIdxKey);
+                if (sIdx < c.students.length) {
+                    allComments.push({ date: l.date, topic: l.topic, studentName: c.students[sIdx], text: l.comments[sIdx], sortName: c.students[sIdx].toLowerCase(), sortDate: l.date });
+                }
+            });
+        });
+        if (currentCommentSortMode === 'name') allComments.sort((a,b) => a.sortName.localeCompare(b.sortName));
+        else allComments.sort((a,b) => b.sortDate.localeCompare(a.sortDate) || a.sortName.localeCompare(b.sortName));
+        
+        allComments.forEach(item => {
+            commentBody.innerHTML += `<tr><td class="col-left" style="white-space:normal;"><strong>${item.date}</strong><br><span style="color:#666; font-size:0.9em;">${item.topic}</span></td>
+                <td class="col-left"><strong>${item.studentName}</strong></td>
+                <td class="col-left" style="white-space:normal; font-style:italic;">${item.text}</td></tr>`;
+        });
+        if (allComments.length > 0) { commentWrapper.style.display = 'block'; noCommentsText.style.display = 'none'; }
+        else { commentWrapper.style.display = 'none'; noCommentsText.style.display = 'block'; }
+        
+        document.getElementById('printCourseName').innerText = c.name + (c.classname ? ' (' + c.classname + ')' : '');
+    }
+
+    function openCommentModal(lessonId, sIdx, stu, text) {
+        currentCommentContext = { lessonId, studentIndex: sIdx, mode: 'history' };
+        document.getElementById('commentModalTitle').innerText = 'Kommentar: ' + stu;
+        document.getElementById('commentModalText').value = text || '';
+        document.getElementById('commentModalOverlay').classList.add('visible');
+    }
+    function openCommentModalEntry(sIdx, stu) {
+        currentCommentContext = { mode: 'entry', studentIndex: sIdx };
+        document.getElementById('commentModalTitle').innerText = 'Notiz: ' + stu;
+        document.getElementById('commentModalText').value = getTempComment(sIdx);
+        document.getElementById('commentModalOverlay').classList.add('visible');
+    }
+    function closeCommentModal(e) { if (!e || e.target.id === 'commentModalOverlay') { document.getElementById('commentModalOverlay').classList.remove('visible'); currentCommentContext = {}; } }
+    function saveCommentFromModal() {
+        const text = document.getElementById('commentModalText').value.trim();
+        if (currentCommentContext.mode === 'entry') {
+            setTempComment(currentCommentContext.studentIndex, text);
+            const icon = document.getElementById('comment-icon-entry-' + currentCommentContext.studentIndex);
+            if(icon) { if(text) { icon.classList.add('has-comment'); icon.title=text; } else { icon.classList.remove('has-comment'); icon.title='Kommentar'; } }
+            closeCommentModal();
+        } else {
+            const l = courses[currentId].lessons.find(x => x.id === currentCommentContext.lessonId);
+            if(l) { if(!text) delete l.comments[currentCommentContext.studentIndex]; else l.comments[currentCommentContext.studentIndex] = text; saveDB(); renderHistory(); closeCommentModal(); }
+        }
+    }
+    function getCommentText(l, sIdx) { return (l && l.comments && l.comments[sIdx]) ? l.comments[sIdx] : ''; }
+    function setTempComment(i, t) { tempLessonComments[i] = t; }
+    function getTempComment(i) { return tempLessonComments[i] || ''; }
+    function clearTempComments() { tempLessonComments = {}; }
+    function exportData() { const b = new Blob([JSON.stringify({courses, order:courseOrder})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'backup.json'; a.click(); }
+    function importData(input) { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = e => { try { const d = JSON.parse(e.target.result); courses = d.courses||{}; courseOrder = d.order||Object.keys(courses); saveDB(); alert('Geladen!'); showDashboard(); } catch(err){alert('Fehler: '+err);} }; r.readAsText(f); input.value=''; }
+</script>
+
+<!-- Kommentar Modal -->
+<div id="commentModalOverlay" class="comment-modal-overlay" onclick="closeCommentModal(event)">
+    <div class="comment-modal">
+        <h4 id="commentModalTitle">Kommentar</h4>
+        <textarea id="commentModalText" placeholder="Notiz..."></textarea>
+        <div class="comment-modal-actions">
+            <button class="btn-outline" onclick="closeCommentModal()">Abbrechen</button>
+            <button class="btn-success" onclick="saveCommentFromModal()">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- Popover: Dynamisch (Niveau wird bei Kompetenz ausgeblendet) -->
+<div id="globalGradePopover" class="grade-popover">
+    <div class="niveau-selector">
+        <button class="gp-niv-btn gp-niv-esa" onclick="setPopoverLevel('esa')" title="ESA">E</button>
+        <button class="gp-niv-btn gp-niv-msa" onclick="setPopoverLevel('msa')" title="MSA">M</button>
+        <button class="gp-niv-btn gp-niv-ahr" onclick="setPopoverLevel('ahr')" title="AHR">A</button>
+    </div>
+    <div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:center;">
+        <button class="gp-btn gp-1" onclick="setGradeFromPopover(1)">1</button>
+        <button class="gp-btn gp-2" onclick="setGradeFromPopover(2)">2</button>
+        <button class="gp-btn gp-3" onclick="setGradeFromPopover(3)">3</button>
+        <button class="gp-btn gp-4" onclick="setGradeFromPopover(4)">4</button>
+        <button class="gp-btn gp-5" onclick="setGradeFromPopover(5)">5</button>
+        <button class="gp-btn gp-6" onclick="setGradeFromPopover(6)">6</button>
+        <button class="gp-btn gp-0" onclick="setGradeFromPopover(0)">0</button>
+    </div>
+</div>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5"}' crossorigin="anonymous"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./sw.js').catch(function (error) {
+            console.warn('Service Worker registration failed:', error);
+          });
+        });
+      }
+    </script>
+</body>
+</html>
