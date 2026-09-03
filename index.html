@@ -49,9 +49,13 @@
     .sum-display { text-align: right; font-weight: bold; margin-top: 10px; }
     .sum-ok { color: var(--g2); } .sum-err { color: var(--g5); }
     
-    #courseList { list-style: none; padding: 0; }
-    .course-item { background: white; border-left: 8px solid #ccc; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
-    .course-item::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.08; z-index: 0; pointer-events: none; }
+    #courseList { list-style: none; padding: 0; margin: 0; }
+    .course-view-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin: 0 0 14px; }
+    .view-switcher { display:flex; gap:3px; padding:3px; background:#eef1f3; border:1px solid #d8dde0; border-radius:8px; }
+    .view-btn { background:transparent; color:#53616b; border-radius:6px; padding:7px 10px; font-size:.82rem; font-weight:600; }
+    .view-btn.active { background:var(--primary); color:white; box-shadow:0 1px 3px rgba(0,0,0,.16); }
+    .course-item { background: white; border: 1px solid #ddd; border-left: 8px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
+    .course-item::before { content: ''; position: absolute; inset: 0; opacity: 0.08; z-index: 0; pointer-events: none; }
     .course-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-color: #bbb; }
     .course-item:hover::before { opacity: 0.15; }
     .course-item.dragging { opacity: 0.5; border: 2px dashed var(--primary); transform: scale(1.02); }
@@ -62,6 +66,21 @@
     .sort-btn { background: #ecf0f1; color: #333; padding: 6px 10px; font-size: 0.8rem; border-radius: 4px; min-width: 32px; border: 1px solid rgba(0,0,0,0.1); transition: all 0.2s; z-index: 2; position: relative; }
     .sort-btn:hover { transform: scale(1.1); font-weight: bold; color: white !important; border-color: transparent; }
     .course-item > div:first-child, .course-item > button { position: relative; z-index: 1; }
+    #courseList.view-small { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:10px; }
+    #courseList.view-small .course-item { min-height:92px; margin:0; padding:12px; display:block; border-left-width:1px !important; border-top:6px solid #ccc; }
+    #courseList.view-small .course-item::after, #courseList.view-large .course-item::after { content:''; position:absolute; inset:0; border-top:3px solid var(--course-color,#2c3e50); opacity:.42; pointer-events:none; }
+    #courseList.view-small .course-item strong { font-size:1rem !important; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #courseList.view-small .course-item small { display:block; margin:4px 0 10px; font-size:.72rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #courseList.view-small .course-item .btn-small { width:100%; margin:0 !important; padding:6px 8px; font-size:.78rem; }
+    #courseList.view-small .course-controls { justify-content:flex-end; margin-top:6px; }
+    #courseList.view-large { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; }
+    #courseList.view-large .course-item { min-height:145px; margin:0; padding:18px; display:flex; flex-direction:column; align-items:stretch; justify-content:space-between; border-left-width:1px !important; border-top:10px solid #ccc; }
+    #courseList.view-large .course-item strong { font-size:1.3rem !important; }
+    #courseList.view-large .course-item small { display:block; margin-top:8px; }
+    #courseList.view-large .course-item .btn-small { align-self:flex-start; margin:14px 0 0 !important; }
+    #courseList.view-large .course-controls { justify-content:flex-end; }
+    #courseList.view-small .course-item > div:first-child, #courseList.view-large .course-item > div:first-child { width:100%; }
+    @media (max-width:560px) { .course-view-toolbar { align-items:stretch; } .view-switcher { width:100%; } .view-btn { flex:1; padding-left:5px; padding-right:5px; } #courseList.view-large { grid-template-columns:1fr; } }
 
     .student-row { border-bottom: 1px solid #eee; padding: 15px 5px; transition: background 0.2s; position: relative; box-sizing: border-box; }
     .student-row.level-esa { border-left: 5px solid var(--esa-color); background: #f9fdf9; }
@@ -242,7 +261,14 @@
             </div>
         </div>
         <br><br>
-        <button id="toggleSortBtn" class="btn-small btn-outline" onclick="toggleSortMode()">✏️ Anordnung bearbeiten</button>
+        <div class="course-view-toolbar">
+            <button id="toggleSortBtn" class="btn-small btn-outline" onclick="toggleSortMode()">✏️ Anordnung bearbeiten</button>
+            <div class="view-switcher" role="group" aria-label="Ansicht der Kursübersicht">
+                <button class="view-btn" data-view="list" onclick="setCourseView('list')" title="Listenansicht">☷ Liste</button>
+                <button class="view-btn" data-view="small" onclick="setCourseView('small')" title="Viele kompakte Karten">▦ Kleine Kacheln</button>
+                <button class="view-btn" data-view="large" onclick="setCourseView('large')" title="Große Karten mit Details">▤ Große Kacheln</button>
+            </div>
+        </div>
         <ul id="courseList" style="list-style:none; padding:0;"></ul>
         <p id="noCourses" style="text-align:center; color:#999;">Keine Kurse vorhanden.</p>
     </div>
@@ -366,6 +392,8 @@
     let currentSortMode = 'last';
     let currentCommentSortMode = 'name';
     let isSortModeActive = false;
+    const COURSE_VIEW_KEY = 'notenwerk_course_view';
+    let courseView = localStorage.getItem(COURSE_VIEW_KEY) || 'list';
 
     const COLORS = ['#2c3e50', '#27ae60', '#2980b9', '#8e44ad', '#d35400', '#c0392b', '#16a085', '#7f8c8d'];
     const DEFAULTS_SEK1 = [{name: "Mitarbeit", w: 10}, {name: "Hausaufgaben", w: 10}, {name: "Meldungen", w: 10}, {name: "Gruppenarbeit", w: 10}, {name: "Test", w: 20}, {name: "Arbeit", w: 40}];
@@ -400,6 +428,7 @@
             courseOrder = [];
         }
         initColorPicker();
+        setCourseView(courseView, false);
         renderDashboard();
     };
 
@@ -472,8 +501,16 @@
         });
     }
 
+    function setCourseView(view, persist = true) {
+        courseView = ['list', 'small', 'large'].includes(view) ? view : 'list';
+        if (persist) localStorage.setItem(COURSE_VIEW_KEY, courseView);
+        const list = document.getElementById('courseList');
+        if (list) { list.classList.remove('view-small', 'view-large'); if (courseView !== 'list') list.classList.add('view-' + courseView); }
+        document.querySelectorAll('.view-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === courseView));
+    }
+
     function renderDashboard() {
-        const list = document.getElementById('courseList'); list.innerHTML = '';
+        const list = document.getElementById('courseList'); setCourseView(courseView, false); list.innerHTML = '';
         if (courseOrder.length === 0 && Object.keys(courses).length > 0) courseOrder = Object.keys(courses);
         if (courseOrder.length === 0) { document.getElementById('noCourses').style.display = 'block'; return; }
         document.getElementById('noCourses').style.display = 'none';
@@ -483,9 +520,11 @@
             const color = c.color || '#2c3e50';
             const typeLabel = c.type === 'kompetenz' ? '🌱 Komp.' : '📊 Noten';
             const li = document.createElement('li'); li.className = 'course-item'; li.dataset.id = id;
+            li.style.setProperty('--course-color', color);
             li.style.borderLeftColor = color; li.style.borderLeftWidth = '10px';
-            li.style.background = `linear-gradient(to right, ${color}15, transparent 20%), white`;
-            li.onclick = (e) => { if (e.target.closest('.sort-controls') || isSortModeActive) return; loadCourse(id); };
+            li.style.borderTopColor = color;
+            li.style.background = `linear-gradient(135deg, ${color}18, transparent 58%), white`;
+            li.onclick = (e) => { if (e.target.closest('.course-controls') || isSortModeActive) return; loadCourse(id); };
             li.innerHTML = `<div style="flex:1;"><strong style="color:${color}; font-size:1.2rem;">${c.name || 'Unbenannt'}</strong><br><small style="color:#555;">${c.classname||'-'} | ${typeLabel} | ${c.students ? c.students.length:0} SuS</small></div>
                 <button class="btn-small" style="background:${color}; color:white; margin-left:10px;" onclick="loadCourse('${id}')">Öffnen</button>
                 <div class="course-controls" onclick="event.stopPropagation()"><button class="sort-btn" onclick="moveCourseUp('${id}')" style="color:${color}">▲</button><button class="sort-btn" onclick="moveCourseDown('${id}')" style="color:${color}">▼</button></div>`;
@@ -517,14 +556,7 @@
         renderCriteriaInputs();
         if (!c.studentLevels) c.studentLevels = {};
         c.students.forEach(s => { if (!c.studentLevels[s]) c.studentLevels[s] = 'msa'; });
-        // Eine Klasse gilt als "eingerichtet", wenn sie Schüler UND benannte Kriterien/Kompetenzen hat.
-        const hasStudents = Array.isArray(c.students) && c.students.length > 0;
-        const hasCriteria = Array.isArray(c.criteria) && c.criteria.some(x => x && x.name && x.name.trim() !== '');
-        if (hasStudents && hasCriteria) {
-            switchTab('entry');
-        } else {
-            switchTab('setup');
-        }
+        switchTab((c.name && c.students && c.students.length) ? 'entry' : 'setup');
     }
 
     function showDashboard() { currentId = null; document.getElementById('view-app').style.display = 'none'; document.getElementById('view-dashboard').style.display = 'block'; renderDashboard(); }
@@ -1361,7 +1393,6 @@
     </div>
 </div>
 
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5"}' crossorigin="anonymous"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
