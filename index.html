@@ -24,7 +24,7 @@
     .card.visible { display: block; }
     button { cursor: pointer; border: none; border-radius: 6px; padding: 12px 16px; font-weight: bold; transition: 0.2s; touch-action: manipulation; font-size: 1rem; -webkit-tap-highlight-color: transparent; font-family: inherit; }
     .btn-primary { background: var(--primary); color: white; width: 100%; margin: 10px 0; padding: 14px; font-size: 1.1rem; position: relative; z-index: 10; box-sizing: border-box; }
-    .btn-sticky { position: sticky; bottom: 20px; margin-top: 30px; margin-bottom: 30px; margin-left: auto; margin-right: auto; display: block; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 100; border-radius: 50px; max-width: 300px; width: 90%; }
+    .btn-sticky { position: sticky; bottom: 20px; margin-top: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 100; border-radius: 50px; max-width: 300px; left: 50%; transform: translateX(-50%); width: 90%; }
     .btn-sticky-fixed { position: fixed !important; bottom: 25px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 9999 !important; width: auto !important; min-width: 220px; max-width: 90%; border-radius: 50px !important; box-shadow: 0 5px 20px rgba(0,0,0,0.3) !important; margin: 0 !important; padding: 14px 28px !important; }
     .btn-success { background: var(--g2); color: white; }
     .btn-danger { background: var(--g5); color: white; }
@@ -70,7 +70,11 @@
     
     .student-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
     .student-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
-    .student-name { font-weight: bold; font-size: 1.1rem; }
+    .student-name { font-weight: bold; font-size: 1.1rem; cursor: pointer; user-select: none; }
+    .student-name .accordion-chevron { display: inline-block; margin-right: 6px; transition: transform 0.2s ease; }
+    .student-row.collapsed .accordion-chevron { transform: rotate(-90deg); }
+    .student-row .collapsed { display: none !important; }
+    .grading-accordion-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .level-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; text-transform: uppercase; }
     .lb-esa { background: var(--esa-color); } .lb-msa { background: var(--msa-color); } .lb-ahr { background: var(--ahr-color); }
     .absent-btn { background: #ecf0f1; color: #333; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; min-height: var(--touch-target); white-space: nowrap; }
@@ -137,8 +141,18 @@
     /* Report Cards */
     .report-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: none; }
     .report-card.visible { display: block; }
-    .rc-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; }
-    .rc-name { font-weight: bold; font-size: 1.1rem; color: var(--primary); }
+    .report-accordion-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .rc-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; gap: 12px; }
+    .rc-name { font-weight: bold; font-size: 1.1rem; color: var(--primary); cursor: pointer; user-select: none; }
+    .rc-name .report-accordion-chevron { display: inline-block; margin-right: 6px; transition: transform 0.2s ease; }
+    .report-card.collapsed .report-accordion-chevron { transform: rotate(-90deg); }
+    .report-card .rc-details.collapsed { display: none !important; }
+
+    /* Verlauf-Akkordeon: Details bleiben im DOM und werden nur per .collapsed verborgen. */
+    .history-item.collapsed .history-chevron { transform: rotate(-90deg); }
+    .history-item .history-details.collapsed { display: none !important; }
+    .history-header { user-select: none; }
+    .rc-summary { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; font-size: 0.82rem; color: #666; }
     .rc-level { font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; color: white; font-weight: bold; text-transform: uppercase; }
     .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 10px; }
     .rc-item { text-align: center; background: #f9f9f9; border-radius: 6px; padding: 8px 4px; }
@@ -193,7 +207,14 @@
         @page { margin: 1.5cm; size: A4 landscape; }
         body { background: white !important; color: black !important; font-size: 10pt; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; display: block !important; width: 100% !important; }
         .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; display: block !important; }
-        .btn-primary, .btn-success, .btn-danger, .btn-outline, .btn-sort, .niveau-bar, .tabs, .color-picker-container, .app-footer, .csv-btn, input, .level-switcher, .absent-btn, #view-dashboard, #tab-setup, #tab-entry, #tab-niveaus, #tab-history, .btn-sticky, .btn-sticky-fixed, .grade-grid, .student-header button, .report-card, .sort-controls, .print-header-info button, .grade-popover, .niveau-selector { display: none !important; visibility: hidden !important; height: 0 !important; }
+        .btn-primary, .btn-success, .btn-danger, .btn-outline, .btn-sort, .niveau-bar, .tabs, .color-picker-container, .app-footer, .csv-btn, input, .absent-btn, #view-dashboard, #tab-setup, #tab-entry, #tab-niveaus, #tab-history, .btn-sticky, .btn-sticky-fixed, .student-header button, .report-card, .sort-controls, .print-header-info button, .grade-popover, .niveau-selector { display: none !important; visibility: hidden !important; height: 0 !important; }
+        .grading-accordion-controls, .report-accordion-controls, .history-accordion-controls { display: none !important; }
+        .student-row .level-switcher, .student-row .grade-grid, .student-row .collapsed { display: flex !important; visibility: visible !important; height: auto !important; }
+        .report-card { display: block !important; visibility: visible !important; height: auto !important; page-break-inside: avoid; }
+        .report-card .rc-details, .report-card .rc-details.collapsed { display: block !important; visibility: visible !important; height: auto !important; }
+        /* Der Verlauf ist im Bildschirm-Layout block; diese Regel hebt .collapsed beim Druck auf. */
+        .history-item .history-details, .history-item .history-details.collapsed { display: block !important; visibility: visible !important; height: auto !important; }
+        .student-row .grade-grid { flex-direction: row !important; }
         #tab-report h3 { display: block !important; visibility: visible !important; color: black !important; font-size: 12pt !important; margin-top: 20px !important; page-break-after: avoid; }
         #tab-setup h3, #tab-entry h3, #tab-niveaus h3, #tab-history h3 { display: none !important; }
         #view-app, #tab-report { display: block !important; visibility: visible !important; position: static !important; width: 100% !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
@@ -221,6 +242,57 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2c3e50">
     <link rel="apple-touch-icon" href="icon-192.png">
+<style>
+
+    /* Mobile app redesign — additive override; desktop (>768px) remains untouched. */
+    @media (max-width: 768px) {
+      :root { --mobile-gutter: 14px; --mobile-radius: 18px; }
+      html, body { overflow-x: hidden !important; max-width: 100%; }
+      body { padding: max(8px, env(safe-area-inset-top)) var(--mobile-gutter) calc(76px + env(safe-area-inset-bottom)); background: #eef3f7; }
+      .container { width: 100%; max-width: 100%; padding: 0; }
+      h1 { font-size: 1.35rem; letter-spacing: -.02em; margin: 8px 0 14px; }
+      .tabs { position: sticky; top: env(safe-area-inset-top); z-index: 30; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; width: 100%; box-sizing: border-box; margin: 0 0 14px; padding: 5px; overflow: visible !important; border: 0; border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 8px 24px rgba(39,61,79,.12); backdrop-filter: blur(12px); }
+      .tab-btn { min-width: 0; width: 100%; min-height: 48px; padding: 7px 3px; border-radius: 11px; white-space: normal; overflow-wrap: anywhere; line-height: 1.05; font-size: clamp(.62rem, 2.4vw, .75rem); color: #627386; background: transparent; }
+      .tab-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(44,62,80,.22); }
+      .tabs:has(.tab-btn.hidden) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .card { padding: 16px; border-radius: var(--mobile-radius); margin-bottom: 14px; box-shadow: 0 7px 22px rgba(39,61,79,.09); }
+      .niveau-bar { gap: 5px; padding: 5px; margin-bottom: 14px; }
+      .niv-btn { min-width: 0; padding: 11px 4px; }
+      input[type="text"], input[type="number"], input[type="date"], input[type="file"], select { font-size: 16px; min-height: 44px; }
+      button { min-height: 44px; }
+      #gradingArea { display: flex; flex-direction: column; gap: 12px; }
+      .student-row { width: 100%; padding: 14px; border: 0 !important; border-left: 4px solid var(--msa-color) !important; border-radius: var(--mobile-radius); background: #fff !important; box-shadow: 0 6px 18px rgba(39,61,79,.10); }
+      .student-row.level-esa { border-left-color: var(--esa-color) !important; }
+      .student-row.level-ahr { border-left-color: var(--ahr-color) !important; }
+      .student-header { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: center; margin-bottom: 12px; }
+      .student-info { min-width: 0; flex-wrap: wrap; gap: 7px; }
+      .student-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; font-size: 1.06rem; }
+      .absent-btn { grid-column: 2; grid-row: 1; padding: 8px 10px; }
+      .row-average { grid-column: 1 / -1; grid-row: 2; display: flex; align-items: center; justify-content: space-between; min-width: 0; width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 14px; background: #f2f6f9; color: var(--primary); text-align: left; font-size: 1.25rem; }
+      .row-average::before { content: 'Gesamtnote'; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #738394; }
+      .level-switcher { gap: 6px; margin: 0 0 12px; }
+      .ls-btn { min-height: 44px; }
+      /* The grading grid becomes a readable list, never a horizontal scroller. */
+      .grade-grid, .grade-grid[style] { display: flex !important; flex-direction: column !important; gap: 8px !important; width: 100% !important; max-width: 100% !important; overflow: visible !important; padding: 0 !important; margin-top: 0 !important; }
+      .grade-col, .grade-col[style] { display: grid !important; grid-template-columns: minmax(0,1fr) auto; grid-template-rows: auto auto; align-items: center; column-gap: 10px; width: 100% !important; min-width: 0 !important; box-sizing: border-box; padding: 10px 10px 10px 12px; border: 1px solid #e2e9ee; border-radius: 14px; background: #f9fbfc; }
+      .grade-label { grid-column: 1; grid-row: 1 / span 2; min-width: 0; margin: 0; text-align: left; color: #364b5c; font-size: .9rem; line-height: 1.2; overflow-wrap: anywhere; word-break: normal; hyphens: auto; }
+      .grade-val { grid-column: 1; grid-row: 2; margin: 2px 0 0; text-align: left; font-size: .7rem; color: #8998a5; }
+      .grade-col .g-btn { grid-column: 2; grid-row: 1 / span 2; justify-self: end; flex: none; width: 56px !important; height: 56px !important; min-width: 56px !important; min-height: 56px !important; aspect-ratio: 1 / 1; border-radius: 50%; padding: 0; line-height: 1; }
+      /* Reports use stacked criterion cards; average is a prominent, true circle. */
+      .report-card { padding: 15px; border: 0; border-radius: var(--mobile-radius); box-shadow: 0 7px 20px rgba(39,61,79,.10); }
+      .rc-header { gap: 8px; align-items: flex-start; }
+      .rc-name { min-width: 0; overflow-wrap: anywhere; }
+      .rc-grid { display: flex; flex-direction: column; gap: 8px; }
+      .rc-item { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 10px; min-height: 54px; padding: 8px 10px; text-align: left; }
+      .rc-label { min-width: 0; margin: 0; overflow-wrap: anywhere; word-break: normal; hyphens: auto; line-height: 1.2; }
+      .rc-grade { display: flex; align-items: center; justify-content: center; width: 38px !important; height: 38px !important; min-width: 38px !important; aspect-ratio: 1 / 1; line-height: 1 !important; border-radius: 50%; padding: 0 !important; box-sizing: border-box; font-size: .78rem !important; }
+      .rc-item[style*="border:2px"] { grid-template-columns: minmax(0,1fr) auto; padding: 10px 12px; background: #f1f6f9; }
+      .rc-item[style*="border:2px"] .rc-grade { width: 56px !important; height: 56px !important; min-width: 56px !important; font-size: .86rem !important; }
+      .table-wrapper { max-width: 100%; overflow-x: hidden !important; }
+      .app-footer { width: 100%; }
+    }
+
+</style>
 </head>
 <body>
 
@@ -295,16 +367,30 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
                 <input type="date" id="lessonDate"><input type="text" id="lessonTopic" placeholder="Thema">
             </div>
+            <div class="grading-accordion-controls" aria-label="Schülerzeilen ein- oder ausklappen">
+                <button class="btn-outline" type="button" onclick="setAllStudentsExpanded(true)">Alle aufklappen</button>
+                <button class="btn-outline" type="button" onclick="setAllStudentsExpanded(false)">Alle zuklappen</button>
+            </div>
             <div id="gradingArea"></div>
             <button class="btn-primary btn-success btn-sticky" onclick="saveLesson()">Stunde speichern</button>
         </div>
 
-        <div id="tab-history" style="display:none;"><div id="historyList"></div></div>
+        <div id="tab-history" style="display:none;">
+            <div class="history-accordion-controls" aria-label="Verlaufseinträge ein- oder ausklappen">
+                <button class="btn-outline" type="button" onclick="setAllHistoryExpanded(true)">Alle aufklappen</button>
+                <button class="btn-outline" type="button" onclick="setAllHistoryExpanded(false)">Alle zuklappen</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
 
         <div id="tab-report" style="display:none;">
             <div class="sort-controls">
                 <button class="btn-sort active" id="btnSortLast" onclick="sortReport('last')">Nachname</button>
                 <button class="btn-sort" id="btnSortFirst" onclick="sortReport('first')">Vorname</button>
+            </div>
+            <div class="report-accordion-controls" aria-label="Berichtskarten ein- oder ausklappen">
+                <button class="btn-outline" type="button" onclick="setAllReportCardsExpanded(true)">Alle aufklappen</button>
+                <button class="btn-outline" type="button" onclick="setAllReportCardsExpanded(false)">Alle zuklappen</button>
             </div>
             <h3 id="reportTitle">Gesamtnoten (mit Bonus)</h3>
             <button class="btn-primary" onclick="window.print()" style="background:#7f8c8d; margin-bottom: 15px; width: auto; display: inline-block;">🖨️ Bericht drucken / als PDF speichern</button>
@@ -388,6 +474,10 @@
     let currentPopoverTarget = null; 
     let currentPopoverLevelOverride = null; 
     let dragSrcEl = null;
+    // Zustand der Akkordeon-Zeilen überlebt Re-Render und Tab-Wechsel.
+    const expandedStudents = new Set();
+    const expandedReportCards = new Set();
+    const expandedHistoryItems = new Set();
 
     window.onload = () => {
         const data = localStorage.getItem(DB_KEY);
@@ -641,6 +731,30 @@
         calcAvg(sIdx);
     }
 
+    function studentAccordionKey(sIdx) { return String(currentId) + '::' + sIdx; }
+
+    function toggleStudentAccordion(sIdx) {
+        const key = studentAccordionKey(sIdx);
+        if (expandedStudents.has(key)) expandedStudents.delete(key); else expandedStudents.add(key);
+        const row = document.querySelector('.student-row[data-idx="' + sIdx + '"]');
+        if (row) applyStudentAccordionState(row, expandedStudents.has(key));
+    }
+
+    function applyStudentAccordionState(row, expanded) {
+        row.classList.toggle('collapsed', !expanded);
+        row.querySelectorAll('.level-switcher, .grade-grid').forEach(el => el.classList.toggle('collapsed', !expanded));
+    }
+
+    function setAllStudentsExpanded(expanded) {
+        const c = courses[currentId];
+        if (!c) return;
+        c.students.forEach((_, sIdx) => {
+            const key = studentAccordionKey(sIdx);
+            if (expanded) expandedStudents.add(key); else expandedStudents.delete(key);
+        });
+        document.querySelectorAll('#gradingArea .student-row').forEach(row => applyStudentAccordionState(row, expanded));
+    }
+
     function renderGrading() {
         const c = courses[currentId]; const area = document.getElementById('gradingArea'); area.innerHTML = '';
         document.getElementById('lessonDate').valueAsDate = new Date(); document.getElementById('lessonTopic').value = '';
@@ -653,12 +767,12 @@
             const header = document.createElement('div'); header.className = 'student-header';
             const infoDiv = document.createElement('div'); infoDiv.className = 'student-info';
             const tempComment = getTempComment(sIdx);
-            infoDiv.innerHTML = `<span class="student-name">${stu}</span>
+            infoDiv.innerHTML = `<span class="student-name" onclick="toggleStudentAccordion(${sIdx})" title="Bewertung ein-/ausblenden"><span class="accordion-chevron">▾</span>${stu}</span>
                 <span class="level-badge lb-${baseLevel}" style="${isKompetenz ? 'display:none;' : ''}">${baseLevel.toUpperCase()}</span>
                 <span class="comment-icon ${tempComment?'has-comment':''}" onclick="openCommentModalEntry(${sIdx}, '${stu.replace(/'/g, "\\'")}')" title="Kommentar">💬</span>`;
             
             const absentBtn = document.createElement('button'); absentBtn.className = 'absent-btn'; absentBtn.innerText = '✓ Da';
-            absentBtn.onclick = () => toggleAbsent(sIdx, absentBtn, row);
+            absentBtn.onclick = (e) => { e.stopPropagation(); toggleAbsent(sIdx, absentBtn, row); };
             const avgSpan = document.createElement('span'); avgSpan.id = 'avg-' + sIdx; avgSpan.className = 'row-average'; avgSpan.innerText = '-';
             
             const switcher = document.createElement('div'); switcher.className = 'level-switcher';
@@ -692,7 +806,9 @@
                 
                 col.appendChild(btn); grid.appendChild(col);
             });
-            row.appendChild(grid); area.appendChild(row);
+            row.appendChild(grid);
+            applyStudentAccordionState(row, expandedStudents.has(studentAccordionKey(sIdx)));
+            area.appendChild(row);
         });
     }
 
@@ -887,7 +1003,7 @@
             l.grades.forEach(g => { if (g) g.forEach(obj => { if(obj && obj.val > 0){ sSum += obj.val; sCnt++; } }); });
             const avg = sCnt ? (sSum/sCnt).toFixed(1) : '-';
 
-            let formHtml = `<div style="padding:15px; display:none; position:relative;" id="detail-${l.id}">
+            let formHtml = `<div class="history-details collapsed" style="padding:15px; display:block; position:relative;" id="detail-${l.id}">
                 <button id="stickySaveBtn_${l.id}" class="btn-success btn-sticky-fixed" onclick="updateLesson(${l.id})">💾 Speichern</button><hr style="border:0; border-top:1px solid #eee; margin:20px 0;">`;
 
             c.students.forEach((stu, sIdx) => {
@@ -961,13 +1077,17 @@
             });
             formHtml += `<button class="btn-danger" style="width:100%;padding:12px;margin-top:20px;" onclick="deleteLesson(${l.id})">🗑️ Löschen</button></div>`;
             
-            const headerHtml = `<div style="padding:15px;background:#f9f9f9;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;" onclick="toggleDetail(${l.id})">
-                <div><span style="font-weight:bold;">${l.date}</span> <span style="color:#666;">- ${l.topic}</span></div>
+            const historyKey = historyAccordionKey(l.id);
+            const headerHtml = `<div class="history-header" style="padding:15px;background:#f9f9f9;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;" onclick="toggleHistoryAccordion(event, ${l.id})" title="Verlaufseintrag ein-/ausblenden">
+                <div><span class="history-chevron" style="display:inline-block;margin-right:6px;transition:transform 0.2s ease;">▾</span><span style="font-weight:bold;">${l.date}</span> <span style="color:#666;">- ${l.topic}</span></div>
                 <div style="font-weight:bold; color:var(--primary); font-size:1.3rem; background:white; padding:5px 15px; border-radius:20px; border:1px solid #ddd;">Ø: ${avg}</div>
                 </div>`;
 
+            item.className = "history-item" + (expandedHistoryItems.has(historyKey) ? "" : " collapsed");
+            item.dataset.historyId = String(l.id);
             item.innerHTML = headerHtml + formHtml;
             div.appendChild(item);
+            applyHistoryAccordionState(item, expandedHistoryItems.has(historyKey));
         });
     }
     
@@ -1005,16 +1125,38 @@
         }
     }
 
-    function toggleDetail(id) {
-        const el = document.getElementById('detail-' + id);
-        const btn = document.getElementById('stickySaveBtn_' + id);
-        if (el) {
-            const isHidden = el.style.display === 'none' || el.style.display === '';
-            document.querySelectorAll('[id^="detail-"]').forEach(d => { d.style.display = 'none'; const b = document.getElementById('stickySaveBtn_' + d.id.replace('detail-', '')); if(b) b.style.display = 'none'; });
-            el.style.display = isHidden ? 'block' : 'none';
-            if (btn) btn.style.display = isHidden ? 'block' : 'none';
-        }
+    function historyAccordionKey(lessonId) { return String(currentId) + '::' + String(lessonId); }
+
+    function applyHistoryAccordionState(item, expanded) {
+        if (!item) return;
+        item.classList.toggle('collapsed', !expanded);
+        const details = item.querySelector('.history-details');
+        if (details) details.classList.toggle('collapsed', !expanded);
     }
+
+    function toggleHistoryAccordion(event, lessonId) {
+        if (event) {
+            if (event.target.closest('button, input, select, textarea, a')) { event.stopPropagation(); return; }
+            event.stopPropagation();
+        }
+        const item = document.querySelector('#historyList .history-item[data-history-id="' + CSS.escape(String(lessonId)) + '"]');
+        if (!item) return;
+        const key = historyAccordionKey(lessonId);
+        const expanded = !expandedHistoryItems.has(key);
+        if (expanded) expandedHistoryItems.add(key); else expandedHistoryItems.delete(key);
+        applyHistoryAccordionState(item, expanded);
+    }
+
+    function setAllHistoryExpanded(expanded) {
+        document.querySelectorAll('#historyList .history-item').forEach(item => {
+            const key = historyAccordionKey(item.dataset.historyId);
+            if (expanded) expandedHistoryItems.add(key); else expandedHistoryItems.delete(key);
+            applyHistoryAccordionState(item, expanded);
+        });
+    }
+
+    // Rückwärtskompatibel für ältere externe Aufrufer.
+    function toggleDetail(id) { toggleHistoryAccordion(null, id); }
 
     function deleteLesson(id) { const c = courses[currentId]; c.lessons = c.lessons.filter(l => l.id !== id); saveDB(); renderHistory(); }
     
@@ -1076,6 +1218,31 @@
 
     // Rückwärtskompatibler Name für externe Aufrufer/ältere gespeicherte Ansichten.
     function saveLessonEdits(lessonId) { return updateLesson(lessonId); }
+
+    function reportAccordionKey(name) { return String(currentId) + '::' + String(name); }
+
+    function applyReportAccordionState(card, expanded) {
+        if (!card) return;
+        card.classList.toggle('collapsed', !expanded);
+        const details = card.querySelector('.rc-details');
+        if (details) details.classList.toggle('collapsed', !expanded);
+    }
+
+    function toggleReportAccordion(card) {
+        if (!card) return;
+        const key = reportAccordionKey(card.dataset.studentName || '');
+        const expanded = !expandedReportCards.has(key);
+        if (expanded) expandedReportCards.add(key); else expandedReportCards.delete(key);
+        applyReportAccordionState(card, expanded);
+    }
+
+    function setAllReportCardsExpanded(expanded) {
+        document.querySelectorAll('#reportCardContainer .report-card').forEach(card => {
+            const key = reportAccordionKey(card.dataset.studentName || '');
+            if (expanded) expandedReportCards.add(key); else expandedReportCards.delete(key);
+            applyReportAccordionState(card, expanded);
+        });
+    }
 
     function sortReport(mode) {
         currentSortMode = mode;
@@ -1233,8 +1400,8 @@
         // Report Cards
         studentData.forEach(d => {
             const lvlCol = d.dominantLevel === 'esa' ? 'var(--esa-color)' : (d.dominantLevel === 'ahr' ? 'var(--ahr-color)' : 'var(--msa-color)');
-            let html = `<div class="report-card"><div class="rc-header"><span class="rc-name">${d.name}</span>
-                <span class="rc-level" style="background:${lvlCol}; ${isKompetenz?'display:none;':''}">${d.dominantLevel}</span></div><div class="rc-grid">`;
+            let html = `<div class="report-card" data-student-name="${d.name.replace(/\"/g, '&quot;')}"><div class="rc-header"><span class="rc-name" onclick="toggleReportAccordion(this.closest('.report-card'))" title="Bericht ein-/ausblenden"><span class="report-accordion-chevron">▾</span>${d.name}</span>
+                <span class="rc-summary"><span class="rc-level" style="background:${lvlCol}; ${isKompetenz?'display:none;':''}">${d.dominantLevel}</span><span>Ø ${d.finalAvg}</span><span>Std: ${d.lessonCount}</span><span>Fehlt: ${d.absent}</span></span></div><div class="rc-details"><div class="rc-grid">`;
             
             d.critSums.forEach((sum, i) => {
                 const avg = d.critCnts[i] ? (sum / d.critCnts[i]).toFixed(1) : '-';
@@ -1258,8 +1425,12 @@
                 html += `<div class="rc-item" style="border:2px solid var(--primary);"><span class="rc-label" style="font-weight:bold;">Ø Gesamt</span>
                     <div class="rc-grade rc-g-avg" style="background:${avgBg}; color:${avgCol}">${d.finalAvg}</div></div>`;
             }
-            html += `</div><div class="rc-footer"><span>Std: ${d.lessonCount}</span><span>Fehlt: ${d.absent}</span></div></div>`;
+            html += `</div><div class="rc-footer"><span>Std: ${d.lessonCount}</span><span>Fehlt: ${d.absent}</span></div></div></div>`;
             cardContainer.innerHTML += html;
+        });
+
+        document.querySelectorAll('#reportCardContainer .report-card').forEach(card => {
+            applyReportAccordionState(card, expandedReportCards.has(reportAccordionKey(card.dataset.studentName || '')));
         });
 
         // Kommentare
@@ -1364,6 +1535,7 @@
         });
       }
     </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
