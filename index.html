@@ -7,13 +7,13 @@
     <style>
     :root {
         --primary: #2c3e50; --bg: #f4f7f6; --white: #ffffff; --border: #ddd;
-        --g1: #256540; --g2: #27ae60; --g3: #f1c40f; --g4: #e67e22; --g5: #e74c3c; --g6: #8e44ad;
+        --g1: #8fc7a2; --g2: #a8d8b9; --g3: #f4d58d; --g4: #efb58f; --g5: #e9a6a6; --g6: #c5a9dc;
         --absent-bg: #fadbd8; --absent-text: #c0392b; --safe: #2980b9;
         --footer-text: #7f8c8d;
-        --esa-color: #27ae60; --msa-color: #2980b9; --ahr-color: #8e44ad;
+        --esa-color: #a8d8b9; --msa-color: #a8c9e8; --ahr-color: #c5a9dc;
         --touch-target: 48px;
         /* Kompetenz Farben (1-5) */
-        --k1: #256540; --k2: #27ae60; --k3: #f1c40f; --k4: #e67e22; --k5: #e74c3c;
+        --k1: #8fc7a2; --k2: #a8d8b9; --k3: #f4d58d; --k4: #efb58f; --k5: #e9a6a6;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 10px; line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
     .container { max-width: 1200px; width: 100%; flex: 1; margin: 0 auto; padding: 0 5px; }
@@ -44,13 +44,38 @@
     .color-opt { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.2s; }
     .color-opt:hover { transform: scale(1.1); }
     .color-opt.selected { border-color: #333; transform: scale(1.15); }
+    .color-opt { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .color-opt.long-pressing { animation: colorPulse .65s ease-in-out infinite alternate; }
+    .color-shade-popup { position: fixed; display: flex; gap: 8px; padding: 9px; border-radius: 14px; background: rgba(255,255,255,.97); border: 1px solid rgba(38,55,72,.14); box-shadow: 0 12px 30px rgba(36,53,70,.2); z-index: 10001; transform: translate(-50%, -115%); animation: popIn .18s ease-out; }
+    .color-shade-popup::after { content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); border: 7px solid transparent; border-top-color: rgba(255,255,255,.97); border-bottom: 0; }
+    .color-shade { width: 34px; height: 34px; min-width: 34px; padding: 0; border-radius: 50%; border: 2px solid rgba(40,50,60,.15); box-shadow: 0 2px 5px rgba(0,0,0,.14); cursor: pointer; }
+    .color-shade:hover, .color-shade:focus-visible { transform: scale(1.12); outline: 2px solid #536b82; outline-offset: 2px; }
+    @keyframes colorPulse { from { transform: scale(1); } to { transform: scale(1.12); } }
     .crit-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 6px; flex-wrap: wrap; }
     .crit-name { flex: 2; min-width: 150px; } .crit-weight { flex: 1; max-width: 70px; }
     .sum-display { text-align: right; font-weight: bold; margin-top: 10px; }
     .sum-ok { color: var(--g2); } .sum-err { color: var(--g5); }
     
     #courseList { list-style: none; padding: 0; }
-    .course-item { background: white; border-left: 8px solid #ccc; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
+    .course-view-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 2px; flex-wrap: wrap; }
+    .course-view-label { color: #7a8b99; font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .course-view-switcher { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid #dce5e9; border-radius: 12px; background: #f5f8fa; }
+    .course-view-btn { min-height: 36px; padding: 7px 11px; border-radius: 8px; background: transparent; color: #627386; font-size: .82rem; }
+    .course-view-btn.active { background: var(--primary); color: white; box-shadow: 0 3px 8px rgba(44,62,80,.2); }
+    .course-view-btn:focus-visible { outline: 3px solid #8fc7a2; outline-offset: 2px; }
+    .course-list { display: grid; gap: 12px; }
+    .course-list.view-compact { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .course-list.view-compact .course-item { min-height: 92px; padding: 12px; align-items: flex-start; flex-direction: column; }
+    .course-list.view-compact .course-item > div:first-child { width: 100%; }
+    .course-list.view-compact .course-item > button { align-self: stretch; margin: 8px 0 0 !important; }
+    .course-list.view-large { grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 16px; }
+    .course-list.view-large .course-item { min-height: 150px; padding: 20px; align-items: flex-start; flex-direction: column; }
+    .course-list.view-large .course-item > div:first-child { width: 100%; }
+    .course-list.view-large .course-item strong { font-size: 1.45rem !important; }
+    .course-list.view-large .course-item > button { align-self: flex-start; margin: 16px 0 0 !important; }
+    .course-list.view-list { display: flex; flex-direction: column; gap: 10px; }
+    .course-list.view-list .course-item { min-height: 0; }
+    .course-item { background: white; border-left: 8px solid #ccc; border: 1px solid #ddd; padding: 15px; margin-bottom: 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
     .course-item::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.08; z-index: 0; pointer-events: none; }
     .course-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-color: #bbb; }
     .course-item:hover::before { opacity: 0.15; }
@@ -234,7 +259,41 @@
         #commentTable, #commentTable thead, #commentTable tbody, #commentTable tr, #commentTable td { display: table !important; visibility: visible !important; border: 1px solid #000 !important; page-break-inside: avoid; }
         #commentTableWrapper { display: block !important; overflow: visible !important; }
     }
-    </style>
+    
+    /* Dashboard layout: clear sequence, calm hierarchy, touch-friendly actions. */
+    .dashboard-card { padding: 24px; }
+    .dashboard-section { margin: 0; }
+    .dashboard-heading, .backup-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .dashboard-heading h2, .backup-heading h3 { margin: 0; }
+    .eyebrow { margin: 0 0 5px; color: #7a8b99; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .section-mark { color: #9aa9b4; font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
+    .course-list { margin: 18px 0 0; }
+    .empty-courses { margin: 22px 0 4px; text-align: center; color: #8998a5; }
+    .dashboard-action { display: flex; justify-content: center; }
+    .sort-action { padding: 18px 0 2px; border-top: 1px solid #e9eef1; }
+    .sort-action button { min-height: 44px; }
+    .new-course-action { padding: 8px 0 6px; }
+    .new-course-action .btn-primary { margin: 0; }
+    .backup-panel { margin-top: 20px; padding: 20px; border: 1px solid #b9e1d7; border-radius: 16px; background: linear-gradient(145deg, #f0fbf8, #e5f5f1); }
+    .backup-panel h3 { font-size: 1.15rem; }
+    .backup-copy { margin: 9px 0 16px; color: #58706c; font-size: .9rem; }
+    .backup-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .backup-actions button, .restore-button { width: 100%; min-height: 48px; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+    .restore-button { background: #fff; color: #2c3e50; border: 1px solid #9fcfc3; }
+    .restore-button:hover { background: #d9f2eb; }
+    @media (max-width: 768px) {
+      .dashboard-card { padding: 16px; }
+      .dashboard-heading h2 { font-size: 1.3rem; }
+      .course-list { margin-top: 14px; }
+      .course-item { padding: 14px 12px; border-radius: 14px; }
+      .course-item > button { min-width: 74px; margin-left: 8px !important; }
+      .sort-action { padding-top: 16px; }
+      .sort-action button { width: 100%; }
+      .new-course-action { padding-top: 8px; }
+      .backup-panel { margin-top: 16px; padding: 16px; border-radius: 16px; }
+      .backup-actions { grid-template-columns: 1fr; }
+    }
+</style>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -298,36 +357,72 @@
 
 <div class="container">
     <h1>📚 Notenwerk - GSN Husum</h1>
-    <div id="view-dashboard" class="card visible">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="margin:0;">Meine Kurse</h2>
+    <div id="view-dashboard" class="card visible dashboard-card">
+        <!-- 1. Kurse: Die zentrale Übersicht steht bewusst an erster Stelle. -->
+        <section class="dashboard-section courses-section" aria-labelledby="coursesHeading">
+            <div class="dashboard-heading">
+                <div>
+                    <p class="eyebrow"></p>
+                    <h2 id="coursesHeading">Meine Kurse</h2>
+                </div>
+                <span class="section-mark" aria-hidden="true"></span>
+            </div>
+            <div class="course-view-toolbar" role="group" aria-label="Kursansicht">
+                <span class="course-view-label">Ansicht</span>
+                <div class="course-view-switcher">
+                    <button type="button" class="course-view-btn" data-course-view="compact" onclick="setCourseView('compact')">Klein</button>
+                    <button type="button" class="course-view-btn" data-course-view="large" onclick="setCourseView('large')">Groß</button>
+                    <button type="button" class="course-view-btn" data-course-view="list" onclick="setCourseView('list')">Liste</button>
+                </div>
+            </div>
+            <ul id="courseList" class="course-list view-compact" style="list-style:none;" aria-live="polite"></ul>
+            <p id="noCourses" class="empty-courses">Keine Kurse vorhanden.</p>
+        </section>
+
+        <!-- 2. Anordnung bearbeiten -->
+         <br>
+        <div class="dashboard-action sort-action">
+            <button id="toggleSortBtn" class="btn-small btn-outline" onclick="toggleSortMode()">✏️ Anordnung bearbeiten</button>
         </div>
-        <button class="btn-primary btn-success" onclick="createNewCourse()">+ Neuer Kurs</button>
-        <div style="background:#e8f6f3; padding:15px; border-radius:8px; margin:20px 0; border:1px solid #a2d9ce;">
-            <h3 style="margin-top:0;">💾 Datensicherung</h3>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-safe" style="flex:1" onclick="exportData()">Alles speichern (JSON)</button>
-                <label class="btn-primary" style="flex:1; text-align:center; margin:0;">
+
+        <!-- 3. Neuer Kurs -->
+          <br>
+         <br>
+        <div class="dashboard-action new-course-action">
+            <button class="btn-primary btn-success" onclick="createNewCourse()">+ Neuer Kurs</button>
+        </div>
+
+        <!-- 4. Datensicherung -->
+          <br>
+         <br>
+        <section class="backup-panel" aria-labelledby="backupHeading">
+            <div class="backup-heading">
+                <div>
+                    <p class="eyebrow"></p>
+                    <h3 id="backupHeading">💾 Datensicherung</h3>
+                </div>
+                <span class="section-mark" aria-hidden="true"></span>
+            </div>
+            <p class="backup-copy">Speichere deine Kurse als Datei oder stelle eine vorhandene Sicherung wieder her.</p>
+            <div class="backup-actions">
+                <button class="btn-safe" onclick="exportData()">Speichern</button>
+                <label class="btn-primary restore-button">
                     Wiederherstellen
                     <input type="file" accept=".json" style="display:none" onchange="importData(this)">
                 </label>
             </div>
-        </div>
-        <br><br>
-        <button id="toggleSortBtn" class="btn-small btn-outline" onclick="toggleSortMode()">✏️ Anordnung bearbeiten</button>
-        <ul id="courseList" style="list-style:none; padding:0;"></ul>
-        <p id="noCourses" style="text-align:center; color:#999;">Keine Kurse vorhanden.</p>
+        </section>
     </div>
 
     <div id="view-app" class="card">
-        <button class="btn-primary" style="background:#95a5a6;" onclick="showDashboard()">← Zurück</button>
-        <h2 id="appTitle" style="margin:0 0 10px 0; text-align:left;"></h2>
+        <button class="btn-primary" style="background:#95a5a6;" onclick="showDashboard()">← Kurse</button>
+        <h2 id="appTitle" style="margin:0 0 20px 0; text-align:left;"></h2>
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('setup')" id="tab-btn-setup">1. Einrichten</button>
-            <button class="tab-btn" onclick="switchTab('niveaus')" id="tab-btn-niveaus">2. Niveaus</button>
-            <button class="tab-btn" onclick="switchTab('entry')" id="tab-btn-entry">3. Bewertung</button>
-            <button class="tab-btn" onclick="switchTab('history')" id="tab-btn-history">4. Verlauf</button>
-            <button class="tab-btn" onclick="switchTab('report')" id="tab-btn-report">5. Bericht</button>
+            <button class="tab-btn active" onclick="switchTab('setup')" id="tab-btn-setup">Einrichten</button>
+            <button class="tab-btn" onclick="switchTab('niveaus')" id="tab-btn-niveaus">Niveaus</button>
+            <button class="tab-btn" onclick="switchTab('entry')" id="tab-btn-entry">Bewertung</button>
+            <button class="tab-btn" onclick="switchTab('history')" id="tab-btn-history">Verlauf</button>
+            <button class="tab-btn" onclick="switchTab('report')" id="tab-btn-report">Bericht</button>
         </div>
 
         <div id="tab-setup">
@@ -338,27 +433,47 @@
                 <option value="sek1">Sekundarstufe I (Klassen 7-10) - Noten 1-6</option>
                 <option value="kompetenz">Kompetenzstufe (Klassen 5-6) - Stufen 1-5</option>
             </select>
-
-            <label>Schüler (durch Komma trennen)</label>
+            <br>
+            <br>
+            <br>
+            <center><h2><label>Klassen- oder Kursliste</label></h2></center>
             <div class="input-group"><input type="text" id="inpStudents" placeholder="Max Mustermann, Erika Musterfrau"></div>
-            <button class="btn-outline csv-btn" onclick="document.getElementById('csvFile').click()">📄 CSV Import</button>
+            <center><button class="btn-outline csv-btn" onclick="document.getElementById('csvFile').click()">📄 CSV Import</button></center>
             <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCsvImport(this)">
-            <span class="helper-text">CSV: Spalte 1 (ignoriert), Spalte 2 = Nachname, Spalte 3 = Vorname</span>
+             <center><span class="helper-text">Import aus dem digitalen Klassenbuch</span></center>
+            <br>
+            <br>
+            <div class="color-picker-container" aria-labelledby="colorPickerLabel">
+                <br>
+                <h2><center><label id="colorPickerLabel" for="colorPicker">Kursfarbe</label></center></h2>
+                <br>
+                <div id="colorPicker" class="color-options" role="group" aria-label="Standardfarben für den Kurs"></div>
+                <br>
+                <br>
+                <center><span class="helper-text">Klicke oder halte eine Farbe gedrückt, um weitere Nuancen auszuwählen.</span></center>
+            </div>
+        <br>
+                <br>
             
-            <label id="lblCriteria">Kriterien & Gewichtung (%)</label>
+            <br>
+            <br>
+            <center><h3><label id="lblCriteria">Kriterien & Gewichtung (%)</label></h3></center>
             <label id="lblCompetences" style="display:none;">Kompetenzen (ohne Gewichtung)</label>
             
             <div id="criteriaContainer"></div>
             <button class="btn-success btn-small" onclick="addCriterion()">+ Eintrag</button>
             <div id="weightSum" class="sum-display">Summe: 0%</div>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <button class="btn-danger" style="width:100%; margin-top:10px;" onclick="deleteCurrentCourse()">⚠️ Diesen Kurs endgültig löschen</button>
             <button class="btn-primary btn-success" onclick="saveSetup()">Speichern</button>
+            <br>
+            <br>
+            <center><button class="btn-danger" style="width:70%; margin-top:10px;" onclick="deleteCurrentCourse()">⚠️ Diesen Kurs löschen ⚠️ </button></center>
+            
         </div>
 
         <div id="tab-niveaus">
             <h3>Basis-Niveaus verwalten</h3>
-            <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Lege hier das standardmäßige Leistungsniveau für jeden Schüler fest.</p>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Lege hier das standardmäßige Leistungsniveau fest.</p>
             <div id="niveauManagementList"></div>
             <button class="btn-primary btn-success" onclick="saveNiveaus()" style="margin-top:20px;">Niveaus speichern</button>
         </div>
@@ -372,7 +487,7 @@
                 <button class="btn-outline" type="button" onclick="setAllStudentsExpanded(false)">Alle zuklappen</button>
             </div>
             <div id="gradingArea"></div>
-            <button class="btn-primary btn-success btn-sticky" onclick="saveLesson()">Stunde speichern</button>
+            <center><button class="btn-primary btn-success btn-sticky" onclick="saveLesson()">Stunde speichern</button></center>
         </div>
 
         <div id="tab-history" style="display:none;">
@@ -448,12 +563,13 @@
     let courses = {};
     let courseOrder = [];
     let currentId = null;
-    let selectedColor = '#2c3e50';
+    let selectedColor = '#b8cbe3';
     let currentSortMode = 'last';
     let currentCommentSortMode = 'name';
     let isSortModeActive = false;
+    let currentCourseView = localStorage.getItem('notewerk-course-view') || 'compact';
 
-    const COLORS = ['#2c3e50', '#27ae60', '#2980b9', '#8e44ad', '#d35400', '#c0392b', '#16a085', '#7f8c8d'];
+    const COLORS = ['#b8cbe3', '#a8d8b9', '#a8c9e8', '#c5a9dc', '#f1c2a5', '#e9a6a6', '#a9d8d0', '#cfd4d8'];
     const DEFAULTS_SEK1 = [{name: "Mitarbeit", w: 10}, {name: "Hausaufgaben", w: 10}, {name: "Meldungen", w: 10}, {name: "Gruppenarbeit", w: 10}, {name: "Test", w: 20}, {name: "Arbeit", w: 40}];
     const DEFAULTS_KOMP = [{name: "Fachwissen"}, {name: "Erkenntnisgewinnung"}, {name: "Kommunikation"}, {name: "Bewertung"}];
 
@@ -495,31 +611,52 @@
 
     function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify({ courses: courses, order: courseOrder })); }
 
-    // --- SORTIERLOGIK ---
+    // --- KURSANSICHTEN UND SORTIERLOGIK ---
+    function setCourseView(view) {
+        if (!['compact', 'large', 'list'].includes(view)) return;
+        currentCourseView = view;
+        localStorage.setItem('notewerk-course-view', view);
+        renderDashboard();
+    }
+    function updateCourseViewControls() {
+        const list = document.getElementById('courseList');
+        if (!list) return;
+        list.classList.remove('view-compact', 'view-large', 'view-list');
+        list.classList.add('view-' + currentCourseView);
+        document.querySelectorAll('[data-course-view]').forEach(btn => {
+            const active = btn.dataset.courseView === currentCourseView;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+    }
+    function bindCourseDragHandlers() {
+        const list = document.getElementById('courseList');
+        if (!list) return;
+        list.classList.toggle('sort-mode', isSortModeActive);
+        list.querySelectorAll('.course-item').forEach(item => {
+            item.setAttribute('draggable', isSortModeActive ? 'true' : 'false');
+            item.removeEventListener('dragstart', handleDragStart);
+            item.removeEventListener('dragover', handleDragOver);
+            item.removeEventListener('drop', handleDrop);
+            item.removeEventListener('dragend', handleDragEnd);
+            if (isSortModeActive) {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+            }
+        });
+    }
     function toggleSortMode() {
         isSortModeActive = !isSortModeActive;
         const btn = document.getElementById('toggleSortBtn');
         const list = document.getElementById('courseList');
         if (isSortModeActive) {
             btn.innerText = '✅ Fertig'; btn.classList.remove('btn-outline'); btn.classList.add('btn-success');
-            list.classList.add('sort-mode');
-            list.querySelectorAll('.course-item').forEach(item => {
-                item.setAttribute('draggable', 'true');
-                item.addEventListener('dragstart', handleDragStart);
-                item.addEventListener('dragover', handleDragOver);
-                item.addEventListener('drop', handleDrop);
-                item.addEventListener('dragend', handleDragEnd);
-            });
+            bindCourseDragHandlers();
         } else {
             btn.innerText = '✏️ Anordnung bearbeiten'; btn.classList.remove('btn-success'); btn.classList.add('btn-outline');
-            list.classList.remove('sort-mode');
-            list.querySelectorAll('.course-item').forEach(item => {
-                item.setAttribute('draggable', 'false');
-                item.removeEventListener('dragstart', handleDragStart);
-                item.removeEventListener('dragover', handleDragOver);
-                item.removeEventListener('drop', handleDrop);
-                item.removeEventListener('dragend', handleDragEnd);
-            });
+            bindCourseDragHandlers();
             saveDB();
         }
     }
@@ -552,40 +689,122 @@
         reader.readAsText(file);
     }
 
+    let colorPressTimer = null;
+    let colorPressTarget = null;
+    let colorLongPressTriggered = false;
+
+    function hexToRgb(hex) {
+        const value = String(hex).replace('#', '');
+        const full = value.length === 3 ? value.split('').map(ch => ch + ch).join('') : value;
+        return { r: parseInt(full.slice(0, 2), 16), g: parseInt(full.slice(2, 4), 16), b: parseInt(full.slice(4, 6), 16) };
+    }
+    function rgbToHex({r, g, b}) {
+        return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+    }
+    function mixColor(hex, target, amount) {
+        const a = hexToRgb(hex), b = hexToRgb(target);
+        return rgbToHex({ r: a.r + (b.r-a.r)*amount, g: a.g + (b.g-a.g)*amount, b: a.b + (b.b-a.b)*amount });
+    }
+    function getColorShades(base) {
+        return [mixColor(base, '#ffffff', .38), base, mixColor(base, '#ffffff', .12), mixColor(base, '#5b6570', .22)];
+    }
+    function getContrastColor(hex) {
+        const {r,g,b} = hexToRgb(hex);
+        return (r * 299 + g * 587 + b * 114) / 1000 > 155 ? '#34495e' : '#ffffff';
+    }
+    function selectColor(color, sourceElement) {
+        selectedColor = color;
+        document.querySelectorAll('.color-opt, .color-shade').forEach(el => el.classList.remove('selected'));
+        if (sourceElement) sourceElement.classList.add('selected');
+        // Keep the in-memory course and localStorage in sync immediately, including shade picks.
+        if (currentId && courses[currentId]) { courses[currentId].color = color; saveDB(); }
+        closeColorShadePopup();
+    }
+    function closeColorShadePopup() {
+        const popup = document.getElementById('colorShadePopup');
+        if (popup) popup.remove();
+        if (colorPressTarget) colorPressTarget.classList.remove('long-pressing');
+        colorPressTarget = null;
+    }
+    function showColorShades(base, anchor) {
+        closeColorShadePopup();
+        colorPressTarget = anchor; anchor.classList.add('long-pressing');
+        const popup = document.createElement('div'); popup.id = 'colorShadePopup'; popup.className = 'color-shade-popup';
+        popup.setAttribute('role', 'dialog'); popup.setAttribute('aria-label', 'Farbschattierungen auswählen');
+        getColorShades(base).forEach((shade, index) => {
+            const option = document.createElement('button'); option.type = 'button'; option.className = 'color-shade';
+            option.style.backgroundColor = shade; option.title = `Schattierung ${index + 1}`; option.setAttribute('aria-label', `Schattierung ${index + 1}`);
+            option.onclick = (event) => { event.stopPropagation(); selectColor(shade, option); };
+            popup.appendChild(option);
+        });
+        document.body.appendChild(popup);
+        const rect = anchor.getBoundingClientRect();
+        popup.style.left = `${rect.left + rect.width / 2}px`;
+        popup.style.top = `${Math.max(76, rect.top)}px`;
+    }
+    function cancelColorPress() {
+        if (colorPressTimer) { clearTimeout(colorPressTimer); colorPressTimer = null; }
+        if (colorPressTarget) colorPressTarget.classList.remove('long-pressing');
+    }
+    function beginColorPress(event, color, div) {
+        if (event.type === 'mousedown' && event.button !== 0) return;
+        cancelColorPress(); colorLongPressTriggered = false;
+        colorPressTimer = setTimeout(() => { colorLongPressTriggered = true; showColorShades(color, div); }, 560);
+    }
     function initColorPicker() {
-        const container = document.getElementById('colorPicker'); if(!container) return; container.innerHTML = '';
+        const container = document.getElementById('colorPicker'); if(!container) return;
+        closeColorShadePopup(); container.innerHTML = '';
         COLORS.forEach(color => {
             const div = document.createElement('div'); div.className = 'color-opt'; div.style.backgroundColor = color;
+            div.setAttribute('role', 'button'); div.setAttribute('tabindex', '0'); div.setAttribute('aria-label', `Pastellfarbe ${color}`);
             if (color === selectedColor) div.classList.add('selected');
-            div.onclick = () => { selectedColor = color; document.querySelectorAll('.color-opt').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); };
+            div.addEventListener('mousedown', e => beginColorPress(e, color, div));
+            div.addEventListener('touchstart', e => beginColorPress(e, color, div), {passive: true});
+            ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(type => div.addEventListener(type, cancelColorPress));
+            // Klick und langer Druck öffnen beide die Nuancen-Auswahl.
+            // Die Grundfarbe bleibt im Popup als eigene, auswählbare Nuance erhalten.
+            div.addEventListener('click', e => {
+                e.preventDefault();
+                if (!colorLongPressTriggered) showColorShades(color, div);
+                colorLongPressTriggered = false;
+            });
+            div.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    showColorShades(color, div);
+                }
+            });
             container.appendChild(div);
         });
     }
+    document.addEventListener('pointerdown', e => { if (!e.target.closest('.color-opt, .color-shade, .color-shade-popup')) closeColorShadePopup(); });
 
     function renderDashboard() {
         const list = document.getElementById('courseList'); list.innerHTML = '';
+        updateCourseViewControls();
         if (courseOrder.length === 0 && Object.keys(courses).length > 0) courseOrder = Object.keys(courses);
         if (courseOrder.length === 0) { document.getElementById('noCourses').style.display = 'block'; return; }
         document.getElementById('noCourses').style.display = 'none';
         courseOrder.forEach(id => {
             if (!courses[id]) return;
             const c = courses[id];
-            const color = c.color || '#2c3e50';
+            const color = c.color || COLORS[0];
             const typeLabel = c.type === 'kompetenz' ? '🌱 Komp.' : '📊 Noten';
             const li = document.createElement('li'); li.className = 'course-item'; li.dataset.id = id;
             li.style.borderLeftColor = color; li.style.borderLeftWidth = '10px';
             li.style.background = `linear-gradient(to right, ${color}15, transparent 20%), white`;
             li.onclick = (e) => { if (e.target.closest('.sort-controls') || isSortModeActive) return; loadCourse(id); };
             li.innerHTML = `<div style="flex:1;"><strong style="color:${color}; font-size:1.2rem;">${c.name || 'Unbenannt'}</strong><br><small style="color:#555;">${c.classname||'-'} | ${typeLabel} | ${c.students ? c.students.length:0} SuS</small></div>
-                <button class="btn-small" style="background:${color}; color:white; margin-left:10px;" onclick="loadCourse('${id}')">Öffnen</button>
+                <button class="btn-small" style="background:${color}; color:${getContrastColor(color)}; margin-left:10px;" onclick="loadCourse('${id}')">Öffnen</button>
                 <div class="course-controls" onclick="event.stopPropagation()"><button class="sort-btn" onclick="moveCourseUp('${id}')" style="color:${color}">▲</button><button class="sort-btn" onclick="moveCourseDown('${id}')" style="color:${color}">▼</button></div>`;
             list.appendChild(li);
         });
+        bindCourseDragHandlers();
     }
 
     function createNewCourse() {
         const id = 'c_' + Date.now();
-        selectedColor = '#2c3e50'; initColorPicker();
+        selectedColor = COLORS[0]; initColorPicker();
         courses[id] = { name: '', classname: '', type: 'sek1', students: [], color: selectedColor, criteria: JSON.parse(JSON.stringify(DEFAULTS_SEK1)), lessons: [], studentLevels: {} };
         courseOrder.unshift(id); saveDB(); loadCourse(id);
     }
@@ -597,13 +816,13 @@
         document.getElementById('view-dashboard').style.display = 'none';
         document.getElementById('view-app').style.display = 'block';
         document.getElementById('appTitle').innerText = c.name || 'Kurs';
-        document.getElementById('appTitle').style.color = c.color || '#2c3e50';
+        document.getElementById('appTitle').style.color = c.color || COLORS[0];
         document.getElementById('inpName').value = c.name;
         document.getElementById('inpClass').value = c.classname;
         document.getElementById('inpStudents').value = c.students.join(', ');
         const typeSelect = document.getElementById('courseType');
         if(typeSelect) { typeSelect.value = c.type || 'sek1'; toggleSetupMode(); }
-        selectedColor = c.color || '#2c3e50'; initColorPicker();
+        selectedColor = c.color || COLORS[0]; initColorPicker();
         renderCriteriaInputs();
         if (!c.studentLevels) c.studentLevels = {};
         c.students.forEach(s => { if (!c.studentLevels[s]) c.studentLevels[s] = 'msa'; });
@@ -790,7 +1009,7 @@
             const grid = document.createElement('div'); grid.className = 'grade-grid';
             c.criteria.forEach((crit, cIdx) => {
                 const col = document.createElement('div'); col.className = 'grade-col';
-                col.innerHTML = `<span class="grade-label">${crit.name}</span>${isKompetenz ? '' : '<span class="grade-val">'+crit.w+'%</span><span class="grade-val" title="Testniveau; wird zur Schülerebene umgerechnet">Niveau je Note</span>'}`;
+                col.innerHTML = `<span class="grade-label">${crit.name}</span>${isKompetenz ? '' : '<span class="grade-val">'+crit.w+'%</span><span class="grade-val" title="Testniveau; wird zur Schülerebene umgerechnet"></span>'}`;
                 const btn = document.createElement('button');
                 btn.className = isKompetenz ? 'g-btn k-0' : 'g-btn g-0';
                 btn.id = 'g-' + sIdx + '-' + cIdx; btn.innerText = ''; btn.dataset.val = 0; btn.dataset.level = baseLevel;
@@ -1535,6 +1754,11 @@
         });
       }
     </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 </body>
