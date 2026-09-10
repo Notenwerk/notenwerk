@@ -158,7 +158,21 @@
     .bg-k5 { background: var(--k5); color: white; }
 
     .text-absent { color: #999; font-style: italic; }
-    .app-footer { text-align: center; padding: 20px 0; margin-top: 20px; border-top: 1px solid #e0e0e0; color: var(--footer-text); font-size: 0.85rem; width: 100%; }
+    .app-footer {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        padding: 18px 12px 10px; margin-top: 28px; border-top: 1px solid rgba(44,62,80,.12);
+        color: var(--footer-text); font-size: .78rem; letter-spacing: .045em;
+        width: 100%; box-sizing: border-box; opacity: .78;
+        transition: opacity .2s ease, color .2s ease;
+    }
+    .app-footer::before, .app-footer::after {
+        content: ''; display: block; width: 22px; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(44,62,80,.28));
+    }
+    .app-footer::after { transform: scaleX(-1); }
+    .app-footer:hover { opacity: 1; color: var(--primary); }
+    .app-footer.hidden { display: none; }
+    .app-footer span { white-space: nowrap; }
     .input-group { position: relative; }
     .csv-btn { width: auto; display: inline-block; margin: 0 0 15px 0; font-size: 0.9rem; padding: 10px 14px; }
     .helper-text { font-size: 0.8rem; color: #666; margin-top: -10px; margin-bottom: 15px; display: block; }
@@ -359,7 +373,7 @@
       .rc-item[style*="border:2px"] { grid-template-columns: minmax(0,1fr) auto; padding: 10px 12px; background: #f1f6f9; }
       .rc-item[style*="border:2px"] .rc-grade { width: 56px !important; height: 56px !important; min-width: 56px !important; font-size: .86rem !important; }
       .table-wrapper { max-width: 100%; overflow-x: hidden !important; }
-      .app-footer { width: 100%; }
+      .app-footer { width: 100%; padding-bottom: 8px; }
     }
 
 </style>
@@ -502,7 +516,7 @@
                 <button class="btn-outline" type="button" onclick="setAllStudentsExpanded(false)">Alle zuklappen</button>
             </div>
             <div id="gradingArea"></div>
-            <center><button class="btn-primary btn-success btn-sticky" onclick="saveLesson()">Stunde speichern</button></center>
+            <center><button class="btn-primary btn-success btn-sticky-fixed" onclick="saveLesson()">Stunde speichern</button></center>
         </div>
 
         <div id="tab-history" style="display:none;">
@@ -571,6 +585,9 @@
             <p id="noCommentsText" style="text-align:center; color:#999; font-style:italic; margin-top:20px; display:none;">Keine Kommentare vorhanden.</p>
         </div>
     </div>
+    <footer id="appFooter" class="app-footer" aria-label="Copyright">
+        <span>© <span id="copyrightYear"></span> Andreas Johannsen</span>
+    </footer>
 </div>
 
 <script>
@@ -610,7 +627,18 @@
     const expandedReportCards = new Set();
     const expandedHistoryItems = new Set();
 
+    function updateAppFooter(isStartPage) {
+        const footer = document.getElementById('appFooter');
+        const year = document.getElementById('copyrightYear');
+        if (year) year.textContent = String(new Date().getFullYear());
+        if (footer) {
+            footer.classList.toggle('hidden', !isStartPage);
+            footer.setAttribute('aria-hidden', isStartPage ? 'false' : 'true');
+        }
+    }
+
     window.onload = () => {
+        updateAppFooter(true);
         const data = localStorage.getItem(DB_KEY);
         if (data) {
             const parsed = JSON.parse(data);
@@ -874,6 +902,7 @@
         if (isSortModeActive) return;
         currentId = id;
         const c = courses[id];
+        updateAppFooter(false);
         document.getElementById('view-dashboard').style.display = 'none';
         document.getElementById('view-app').style.display = 'block';
         document.getElementById('appTitle').innerText = c.name || 'Kurs';
@@ -892,7 +921,7 @@
         switchTab(isSetUp ? 'entry' : 'setup');
     }
 
-    function showDashboard() { currentId = null; document.getElementById('view-app').style.display = 'none'; document.getElementById('view-dashboard').style.display = 'block'; renderDashboard(); }
+    function showDashboard() { currentId = null; updateAppFooter(true); document.getElementById('view-app').style.display = 'none'; document.getElementById('view-dashboard').style.display = 'block'; renderDashboard(); }
     function deleteCurrentCourse() { if(!currentId) return; if(confirm('Wirklich löschen?')) { delete courses[currentId]; courseOrder = courseOrder.filter(id => id !== currentId); saveDB(); showDashboard(); } }
 
     function toggleSetupMode() {
@@ -1817,6 +1846,8 @@
         });
       }
     </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
