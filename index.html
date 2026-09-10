@@ -80,6 +80,10 @@
     .course-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-color: #bbb; }
     .course-item:hover::before { opacity: 0.15; }
     .course-item.dragging { opacity: 0.5; border: 2px dashed var(--primary); transform: scale(1.02); }
+    /* Touch reordering: disable browser selection/scroll gestures only while sorting. */
+    .course-list.sort-mode, .course-list.sort-mode * { user-select: none; -webkit-user-select: none; }
+    .course-list.sort-mode .course-item { touch-action: none; }
+    body.course-touch-dragging { overscroll-behavior: none; }
     .course-controls { display: none; gap: 5px; align-items: center; z-index: 1; position: relative; }
     .course-item.sort-mode .course-controls { display: flex; }
     .course-item.sort-mode { cursor: grab; }
@@ -293,6 +297,13 @@
       .backup-panel { margin-top: 16px; padding: 16px; border-radius: 16px; }
       .backup-actions { grid-template-columns: 1fr; }
     }
+
+    .section-divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 30px 0;
+}
 </style>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -435,6 +446,8 @@
             </select>
             <br>
             <br>
+             <hr class="section-divider">
+            <br>
             <br>
             <center><h2><label>Klassen- oder Kursliste</label></h2></center>
             <div class="input-group"><input type="text" id="inpStudents" placeholder="Max Mustermann, Erika Musterfrau"></div>
@@ -442,6 +455,8 @@
             <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCsvImport(this)">
              <center><span class="helper-text">Import aus dem digitalen Klassenbuch</span></center>
             <br>
+            <br>
+             <hr class="section-divider">
             <br>
             <div class="color-picker-container" aria-labelledby="colorPickerLabel">
                 <br>
@@ -454,7 +469,7 @@
             </div>
         <br>
                 <br>
-            
+                <hr class="section-divider">
             <br>
             <br>
             <center><h3><label id="lblCriteria">Kriterien & Gewichtung (%)</label></h3></center>
@@ -639,11 +654,14 @@
             item.removeEventListener('dragover', handleDragOver);
             item.removeEventListener('drop', handleDrop);
             item.removeEventListener('dragend', handleDragEnd);
+            item.removeEventListener('touchstart', handleTouchStart);
             if (isSortModeActive) {
                 item.addEventListener('dragstart', handleDragStart);
                 item.addEventListener('dragover', handleDragOver);
                 item.addEventListener('drop', handleDrop);
                 item.addEventListener('dragend', handleDragEnd);
+                // Native HTML drag events do not fire on most mobile browsers.
+                item.addEventListener('touchstart', handleTouchStart, { passive: false });
             }
         });
     }
@@ -667,6 +685,49 @@
     function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); return false; }
     function handleDrop(e) { if (e.stopPropagation) e.stopPropagation(); const target = this.closest('.course-item'); if (dragSrcEl !== target) moveCourseInArray(courseOrder.indexOf(dragSrcEl.dataset.id), courseOrder.indexOf(target.dataset.id)); return false; }
     function handleDragEnd() { this.classList.remove('dragging'); saveDB(); }
+
+    // Pointer-free fallback for iOS/Android, where HTML5 drag-and-drop is unavailable.
+    let touchDragEl = null;
+    let touchDragMoved = false;
+    function handleTouchStart(e) {
+        if (!isSortModeActive || e.touches.length !== 1 || e.target.closest('button')) return;
+        e.preventDefault();
+        touchDragEl = this;
+        touchDragMoved = false;
+        touchDragEl.classList.add('dragging');
+        document.body.classList.add('course-touch-dragging');
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd, { passive: false });
+        document.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+    }
+    function handleTouchMove(e) {
+        if (!touchDragEl || e.touches.length !== 1) return;
+        e.preventDefault();
+        touchDragMoved = true;
+        const point = e.touches[0];
+        const target = document.elementFromPoint(point.clientX, point.clientY)?.closest('.course-item');
+        const list = document.getElementById('courseList');
+        if (!target || target === touchDragEl || !list || !list.contains(target)) return;
+        const rect = target.getBoundingClientRect();
+        const insertAfter = point.clientY > rect.top + rect.height / 2;
+        list.insertBefore(touchDragEl, insertAfter ? target.nextSibling : target);
+    }
+    function handleTouchEnd(e) {
+        if (!touchDragEl) return;
+        if (e.cancelable) e.preventDefault();
+        const list = document.getElementById('courseList');
+        touchDragEl.classList.remove('dragging');
+        document.body.classList.remove('course-touch-dragging');
+        if (touchDragMoved && list) {
+            courseOrder = Array.from(list.querySelectorAll('.course-item')).map(item => item.dataset.id);
+            saveDB();
+        }
+        touchDragEl = null;
+        touchDragMoved = false;
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+        document.removeEventListener('touchcancel', handleTouchEnd);
+    }
 
     function handleCsvImport(input) {
         const file = input.files[0]; if (!file) return;
@@ -1756,6 +1817,7 @@
         });
       }
     </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
